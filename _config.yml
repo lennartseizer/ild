@@ -1,7 +1,7 @@
 # Setup
 title:               ILD
 tagline:             'Theory & Analysis'
-description:         'This page contains materials, code, and background on intensive longitudinal data analysis. Made by <a href="https://github.com/lennartseizer" target="_blank">@lennartseizer</a>.'
+description:         'This page contains material, code, and background on intensive longitudinal data analysis. Made by <a href="https://github.com/lennartseizer" target="_blank">@lennartseizer</a>.'
 url:                 'https://lennartseizer.github.io'
 baseurl:             '/ild'
 paginate:            5

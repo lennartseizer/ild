@@ -1,7 +1,7 @@
 # Setup
 title:               ILD
-tagline:             'EMA'
-description:         '...me that places the utmost gravity on content with a hidden drawer. Made by <a href="https://twitter.com/mdo" target="_blank">@mdo</a>.'
+tagline:             'Theory & Analysis'
+description:         'This page contains materials, code, and background on intensive longitudinal data analysis. Made by <a href="https://github.com/lennartseizer" target="_blank">@lennartseizer</a>.'
 url:                 'https://lennartseizer.github.io'
 baseurl:             '/ild'
 paginate:            5

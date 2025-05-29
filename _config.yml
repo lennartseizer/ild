@@ -17,3 +17,5 @@ author:
 plugins:
   - jekyll-paginate
 
+# Custom vars
+version:             05/2025

@@ -58,27 +58,10 @@ subject,time,emotion
   </tbody>
 </table>
 
-{% highlight R %}
-# load package
-library(lme4)
 
-# estimate model
-fit <- lmer(emotion ~ time + (1|id), data = data)
 
-summary(fit)
-{% endhighlight %}
-
-```someLanguage
-# load package
-library(lme4)
-
-# estimate model
-fit <- lmer(emotion ~ time + (1|id), data = data)
-
-summary(fit)
-```
 {% include codeHeader.html %}
-```R
+```{r}
 # load package
 library(lme4)
 

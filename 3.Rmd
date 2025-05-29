@@ -85,5 +85,6 @@ library(lme4)
 # estimate model
 fit <- lmer(emotion ~ time + (1|id), data = data)
 
+# View results
 summary(fit)
 ```

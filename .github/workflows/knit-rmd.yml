@@ -1,11 +1,13 @@
 name: Knit R Markdown
 
-# Top-level trigger + permissions:
 on:
   push:
-    branches: [ main ]
-    paths: [ '**/*.Rmd' ]
+    branches:
+      - main
+    paths:
+      - '**/*.Rmd'
   workflow_dispatch:
+
 permissions:
   contents: write
 
@@ -13,43 +15,34 @@ jobs:
   render:
     runs-on: ubuntu-latest
     steps:
-
-      # 1) checkout with full history & persisted credentials
-      - name: Checkout repo
+      - name: Checkout repository
         uses: actions/checkout@v3
         with:
-          fetch-depth: 0               # full history, not a shallow clone
-          persist-credentials: true    # so GITHUB_TOKEN is set up for push
+          fetch-depth: 0
+          persist-credentials: true
 
-      # 2) set up R
-      - uses: r-lib/actions/setup-r@v2
+      - name: Setup R
+        uses: r-lib/actions/setup-r@v2
 
-      # 3) install Pandoc
       - name: Install Pandoc
         uses: r-lib/actions/setup-pandoc@v2
 
-      # 4) install rmarkdown
       - name: Install R dependencies
         run: |
           R -e 'install.packages("rmarkdown", repos="https://cloud.r-project.org")'
 
-      # 5) debug info: what remote + branch are we on?
-      - name: Debug Git info
-        run: |
-          echo "Branch:" $(git rev-parse --abbrev-ref HEAD)
-          git remote -v
-
-      # 6) render all Rmd → md
-      - name: Render .Rmd → .md
+      - name: Render all Rmd → md
         run: |
           find . -name '*.Rmd' \
             | xargs -I{} Rscript -e "rmarkdown::render('{}', output_format='github_document')"
 
-      # 7) commit & push
-     - name: Commit & push generated Markdown
-       run: |
-         git config user.name  "github-actions[bot]"
-         git config user.email "github-actions[bot]@users.noreply.github.com"
-         git add '*.md'
-         git commit -m "Auto-render Rmd → md [skip ci]" || echo "Nothing to commit"
-         git push
+      - name: Commit & push generated Markdown & figures
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add '*.md'
+          if [ -d figure ]; then
+            git add 'figure/*'
+          fi
+          git commit -m "Auto-render Rmd → md [skip ci]" || echo "Nothing to commit"
+          git push

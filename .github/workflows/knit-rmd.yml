@@ -46,10 +46,10 @@ jobs:
             | xargs -I{} Rscript -e "rmarkdown::render('{}', output_format='github_document')"
 
       # 7) commit & push
-      - name: Commit & push generated Markdown
-        run: |
-          git config user.name  "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add --all '*.md' 'figure/*'
-          git commit -m "Auto-render Rmd → md [skip ci]" || echo "Nothing to commit"
-          git push
+     - name: Commit & push generated Markdown
+       run: |
+         git config user.name  "github-actions[bot]"
+         git config user.email "github-actions[bot]@users.noreply.github.com"
+         git add '*.md'
+         git commit -m "Auto-render Rmd → md [skip ci]" || echo "Nothing to commit"
+         git push

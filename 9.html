@@ -1,58 +1,38 @@
 ---
 layout: page
-title: Useful software
+title: Useful softwares
 ---
+
 <!doctype html>
 <html lang="de">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Mixed-Effects Models – von OLS zu LME/LMM</title>
-  <!-- MathJax v3 -->
+
+  <!-- MathJax v3 (mit Color-Paket) -->
   <script>
     window.MathJax = {
+      loader: { load: ['[tex]/color'] },           // <— wichtig
       tex: {
         inlineMath: [['$', '$'], ['\\(', '\\)']],
         displayMath: [['$$','$$']],
-        packages: {'[+]': ['noerrors','noundefined','color']}
+        packages: { '[+]': ['color','noerrors','noundefined'] }
       },
-      svg: {fontCache: 'global'}
+      svg: { fontCache: 'global' }
     };
   </script>
   <script id="MathJax-script" async
     src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+
   <style>
-    body {
-      font-family: system-ui, sans-serif;
-      background: #f9fafb;
-      color: #111827;
-      margin: 0;
-      padding: 0;
-    }
-    .wrap {
-      max-width: 960px;
-      margin: 2rem auto;
-      padding: 0 1rem 3rem;
-    }
+    body { font-family: system-ui, sans-serif; background:#f9fafb; color:#111827; margin:0; }
+    .wrap { max-width: 960px; margin: 2rem auto; padding: 0 1rem 3rem; }
     h1 { font-size: 2rem; margin-bottom: 1rem; }
     h2 { font-size: 1.4rem; margin: 2rem 0 .5rem; }
-    .card {
-      background: #fff;
-      border-radius: 10px;
-      padding: 1rem 1.25rem;
-      box-shadow: 0 4px 14px rgba(0,0,0,.08);
-      margin-top: 1rem;
-    }
-    .note { font-size: .9rem; color: #6b7280; }
-    .code {
-      font-family: monospace;
-      background: #0b1020;
-      color: #d4d4d4;
-      padding: .5rem .8rem;
-      border-radius: 6px;
-      margin-top: .5rem;
-      display: inline-block;
-    }
+    .card { background:#fff; border-radius:10px; padding:1rem 1.25rem; box-shadow:0 4px 14px rgba(0,0,0,.08); margin-top:1rem; }
+    .note { font-size:.9rem; color:#6b7280; }
+    .code { font-family:monospace; background:#0b1020; color:#d4d4d4; padding:.5rem .8rem; border-radius:6px; margin-top:.5rem; display:inline-block; }
   </style>
 </head>
 <body>
@@ -116,3 +96,4 @@ title: Useful software
   </div>
 </body>
 </html>
+

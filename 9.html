@@ -111,29 +111,29 @@ title: Formulas
     <h2>2) Random Intercept Mixed-Effects-Model </h2>
     <div class="card">
       $$
-      Level&ensp;1: \mathbf{y}_{ij}
-      = \color{blue}\boldsymbol{\beta}_{0j}
-      \color{black}+ \color{blue}\boldsymbol{\beta}_{1}\color{gray}{\mathbf{w}_{ij}}
-      \color{black}+ \color{red}{\boldsymbol{\varepsilon}_{ij}}
+      Level&ensp;1: y_{ij}
+      = \color{blue}\beta_{0j}
+      \color{black}+ \color{blue}\beta_{1}\color{gray}w_{ij}
+      \color{black}+ \color{red}\varepsilon_{ij}
       $$
       $$
-      Level&ensp;2: \color{blue}{\boldsymbol{\beta}_{0j}}
-      \color{black}= \color{blue}\mathbf{\gamma}_{00}
-      \color{black}+ \color{blue}\mathbf{\gamma}_{01}\color{gray}{\mathbf{b}_{j}}
-      \color{black}+ \color{red}{\boldsymbol{u}_{0j}}
+      Level&ensp;2: \color{blue}\beta_{0j}
+      \color{black}= \color{blue}\gamma_{00}
+      \color{black}+ \color{blue}\gamma_{01}\color{gray}b_{j}
+      \color{black}+ \color{red}u_{0j}
       $$
       $$
-      Level&ensp;2: \color{blue}{\boldsymbol{\beta}_{1j}}
-      \color{black}= \color{gray}\mathbf{\gamma}_{10}
-      \color{black}+ \color{red}{\boldsymbol{u}_{1j}}
+      Level&ensp;2: \color{blue}\beta_{1j}
+      \color{black}= \color{gray}\gamma_{10}
+      \color{black}+ \color{red}u_{1j}
       $$
     </div>
     <div class="card">
       $$
-      Complete: \mathbf{y}_{ij}
-      = (\color{blue}\mathbf{\gamma}_{00}\color{black}+\color{blue}\mathbf{\gamma}_{01}\color{gray}{\mathbf{b}_{j}}\color{black}+\color{red}{\boldsymbol{u}_{ij}}\color{black})
-      \color{black}+ \color{blue}\boldsymbol{\beta}_{1}\color{gray}{\mathbf{w}_{ij}}
-      \color{black}+ \color{red}{\boldsymbol{\varepsilon}_{ij}}
+      Complete: y_{ij}
+      = (\color{blue}\gamma_{00}\color{black}+\color{blue}\gamma_{01}\color{gray}{b_{j}}\color{black}+\color{red}{u_{ij}}\color{black})
+      \color{black}+ \color{blue}\beta_{1}\color{gray}w_{ij}
+      \color{black}+ \color{red}\varepsilon_{ij}
       $$
     </div>
     <div class="card">

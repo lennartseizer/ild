@@ -144,13 +144,11 @@ title: Formulas
       + \color{green}{b_{0j}} + \color{red}{\varepsilon_{ij}}
       $$
       <center>
-      <div class="code">
-        # lme4 <br>
-        lmer(y ~ 1 + (1 | id), data=data) <br>
-        # nlme <br>
-        lme(y ~ 1, random = ~ 1 | id, data=data)</div> <br>
-    </div>
-    </center>
+      <div class="code" style="font-size: 15px";>
+        lme4::lmer(y ~ w + (w | id), data=data) <br>
+        nlme::lme(y ~ w , random = ~ w | id, data=data)
+      </div>
+      </center>
     </div>
 
     <h2>3) Zufälliger Interzept (RI)</h2>

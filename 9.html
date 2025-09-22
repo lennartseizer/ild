@@ -125,10 +125,9 @@ title: Formulas
       $$
       <center>
       <div class="code">
-        # lme4 <br>
-        lmer(y ~ 1 + x + (1 | id), data=data) <br>
-        # nlme <br>
-        lme(y ~ 1 + x , random = ~ 1 | id, data=data)</div> <br>
+        lme4::lmer(y ~ 1 + x + (1 | id), data=data) <br>
+        nlme::lme(y ~ 1 + x , random = ~ 1 | id, data=data)
+      </div> 
     </div>
     </center>
     </div>

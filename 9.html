@@ -11,19 +11,19 @@ title: Useful softwares
   <title>Mixed-Effects Models – von OLS zu LME/LMM</title>
 
   <!-- MathJax v3 (mit Color-Paket) -->
-  <script>
-    window.MathJax = {
-      loader: { load: ['[tex]/color'] },           // <— wichtig
-      tex: {
-        inlineMath: [['$', '$'], ['\\(', '\\)']],
-        displayMath: [['$$','$$']],
-        packages: { '[+]': ['color','noerrors','noundefined'] }
-      },
-      svg: { fontCache: 'global' }
-    };
-  </script>
-  <script id="MathJax-script" async
-    src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+ <script>
+  window.MathJax = {
+    loader: { load: ['[tex]/color'] },
+    tex: {
+      inlineMath: [['$', '$'], ['\\(', '\\)']],
+      displayMath: [['$$','$$']],
+      packages: { '[+]': ['color','noerrors','noundefined'] }
+    },
+    chtml: { scale: 1, matchFontHeight: true }   // <— scharf via webfonts
+  };
+</script>
+<script id="MathJax-script" async
+  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
 
   <style>
     body { font-family: system-ui, sans-serif; background:#f9fafb; color:#111827; margin:0; }

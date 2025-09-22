@@ -99,12 +99,16 @@ title: Formulas
     <h2>1) Klassisches lineares Modell (OLS)</h2>
     <div class="card">
       $$
-      \underbrace{\mathbf y}_{\text{Antwort}}
-      = \underbrace{\color{gray}{\mathbf X}}_{\text{Design}}
-      \,\underbrace{\color{blue}{\boldsymbol\beta}}_{\text{feste Effekte}}
-      + \underbrace{\color{red}{\boldsymbol\varepsilon}}_{\varepsilon \sim \mathcal N(\mathbf 0,\, \sigma^2\mathbf I)}
+      \mathbf y
+      = \color{gray}{\mathbf X}\,\color{blue}{\boldsymbol\beta}
+      + \color{gray}{\mathbf Z}\,\color{green}{\mathbf b}
+      + \color{red}{\boldsymbol\varepsilon}
       $$
-      <p class="note">Alles steckt in $\color{blue}{\beta}$; Varianz homogen: $\sigma^2$.</p>
+      $$
+      \color{green}{\mathbf b} \sim \mathcal N(\mathbf 0,\mathbf G),\quad
+      \color{red}{\boldsymbol\varepsilon} \sim \mathcal N(\mathbf 0,\mathbf R)
+      $$
+      <div class="code">lme4: y ~ 1 + x + (1 | gruppe)</div>
     </div>
 
     <h2>2) Mixed-Effects-Modell</h2>

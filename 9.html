@@ -10,54 +10,101 @@ title: Useful softwares
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Mixed-Effects Models – von OLS zu LME/LMM</title>
 
-  <!-- MathJax v3 (mit Color-Paket) -->
- <script>
-  window.MathJax = {
-    loader: { load: ['[tex]/color'] },
-    tex: {
-      inlineMath: [['$', '$'], ['\\(', '\\)']],
-      displayMath: [['$$','$$']],
-      packages: { '[+]': ['color','noerrors','noundefined'] }
-    },
-    chtml: { scale: 1, matchFontHeight: true }   // <— scharf via webfonts
-  };
-</script>
-<script id="MathJax-script" async
-  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+  <!-- MathJax v3 (chtml + color) -->
+  <script>
+    window.MathJax = {
+      loader: { load: ['[tex]/color'] },
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']],
+        displayMath: [['$$','$$']],
+        packages: { '[+]': ['color','noerrors','noundefined'] }
+      },
+      chtml: { scale: 1, matchFontHeight: true }
+    };
+  </script>
+  <script id="MathJax-script" async
+    src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
 
   <style>
-    body { font-family: system-ui, sans-serif; background:#f9fafb; color:#111827; margin:0; }
-    .wrap { max-width: 960px; margin: 2rem auto; padding: 0 1rem 3rem; }
+    body {
+      font-family: system-ui, sans-serif;
+      background: #f9fafb;
+      color: #111827;
+      margin: 0;
+    }
+    .wrap {
+      max-width: 960px;
+      margin: 2rem auto;
+      padding: 0 1rem 3rem;
+    }
     h1 { font-size: 2rem; margin-bottom: 1rem; }
     h2 { font-size: 1.4rem; margin: 2rem 0 .5rem; }
-    .card { background:#fff; border-radius:10px; padding:1rem 1.25rem; box-shadow:0 4px 14px rgba(0,0,0,.08); margin-top:1rem; }
-    .note { font-size:.9rem; color:#6b7280; }
-    .code { font-family:monospace; background:#0b1020; color:#d4d4d4; padding:.5rem .8rem; border-radius:6px; margin-top:.5rem; display:inline-block; }
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 1rem 1.25rem;
+      box-shadow: 0 4px 14px rgba(0,0,0,.08);
+      margin-top: 1rem;
+    }
+    .legend {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      font-size: .95rem;
+      margin: 1rem 0 2rem;
+    }
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: .4rem;
+      border: 1px solid #e5e7eb;
+      border-radius: 999px;
+      padding: .2rem .6rem;
+      background: #fff;
+    }
+    .dot {
+      width: .8rem;
+      height: .8rem;
+      border-radius: 50%;
+    }
+    .dot.fixed { background: blue; }
+    .dot.random { background: green; }
+    .dot.error { background: red; }
+    .dot.matrix { background: gray; }
+    .note { font-size: .9rem; color: #6b7280; }
+    .code {
+      font-family: monospace;
+      background: #0b1020;
+      color: #d4d4d4;
+      padding: .5rem .8rem;
+      border-radius: 6px;
+      margin-top: .5rem;
+      display: inline-block;
+    }
   </style>
 </head>
 <body>
   <div class="wrap">
+    <h1>Mixed-Effects Models (LME/LMM)</h1>
     <p class="note">Von der klassischen linearen Regression zu gemischten Modellen – mit festen und zufälligen Effekten.</p>
 
+    <!-- Legende -->
     <div class="legend">
       <span class="chip"><span class="dot fixed"></span>Feste Effekte (β)</span>
       <span class="chip"><span class="dot random"></span>Zufällige Effekte (b)</span>
       <span class="chip"><span class="dot error"></span>Fehler / Residuen (ε)</span>
       <span class="chip"><span class="dot matrix"></span>Designmatrizen (X, Z)</span>
     </div>
-    
+
     <h2>1) Klassisches lineares Modell (OLS)</h2>
     <div class="card">
       $$
-      \mathbf{y_ij}
-      = \color{gray}{\mathbf X}\,\color{blue}{\boldsymbol\beta}
-      + \color{gray}{\mathbf Z}\,\color{green}{\mathbf b}
-      + \color{red}{\boldsymbol\varepsilon}
+      \underbrace{\mathbf y}_{\text{Antwort}}
+      = \underbrace{\color{gray}{\mathbf X}}_{\text{Design}}
+      \,\underbrace{\color{blue}{\boldsymbol\beta}}_{\text{feste Effekte}}
+      + \underbrace{\color{red}{\boldsymbol\varepsilon}}_{\varepsilon \sim \mathcal N(\mathbf 0,\, \sigma^2\mathbf I)}
       $$
-      $$
-      \color{green}{\mathbf b} \sim \mathcal N(\mathbf 0,\mathbf G),\quad
-      \color{red}{\boldsymbol\varepsilon} \sim \mathcal N(\mathbf 0,\mathbf R)
-      $$
+      <p class="note">Alles steckt in $\color{blue}{\beta}$; Varianz homogen: $\sigma^2$.</p>
     </div>
 
     <h2>2) Mixed-Effects-Modell</h2>

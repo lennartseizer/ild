@@ -136,6 +136,30 @@ title: Formulas
       </center>
     </div>
 
+    <div class="card">
+      $$
+      Level&nbsp;1: \mathbf{y}_{ij}
+      = \color{blue}\boldsymbol{\beta}_{0j}
+      \color{black}+ \color{blue}\boldsymbol{\beta_{1}}\color{gray}{\mathbf{w}_{ij}}
+      \color{black}+ \color{red}{\boldsymbol{\varepsilon}_{ij}}
+      $$
+      $$
+      Level&nbsp;2: \color{blue}{\boldsymbol{\beta}_{0j}}
+      = \color{gray}{\gamma_{00}}
+       \color{black}+ \color{red}{\boldsymbol{u}_{ij}}
+      $$
+      $$
+      \color{green}{\mathbf b} \sim \mathcal N(\mathbf 0,\mathbf G),\quad
+      \color{red}{\boldsymbol\varepsilon} \sim \mathcal N(\mathbf 0,\mathbf R)
+      $$
+      <center>
+      <div class="code" style="font-size: 15px";>
+        lme4::lmer(y ~ w + (1 | id), data=data) <br>
+        nlme::lme(y ~ w, random = ~ 1 | id, data=data)
+      </div>
+      </center>
+    </div>
+
     <h2>3) Random Slope Mixed-Effects-Model</h2>
     <div class="card">
       $$

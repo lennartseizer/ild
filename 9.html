@@ -128,30 +128,16 @@ title: Formulas
       \color{green}{\mathbf b} \sim \mathcal N(\mathbf 0,\mathbf G),\quad
       \color{red}{\boldsymbol\varepsilon} \sim \mathcal N(\mathbf 0,\mathbf R)
       $$
-      <center>
-      <div class="code" style="font-size: 15px";>
-        lme4::lmer(y ~ w + (1 | id), data=data) <br>
-        nlme::lme(y ~ w, random = ~ 1 | id, data=data)
-      </div>
-      </center>
     </div>
-
     <div class="card">
       $$
-      Level&nbsp;1: \mathbf{y}_{ij}
-      = \color{blue}\boldsymbol{\beta}_{0j}
+      Complete: \mathbf{y}_{ij}
+      = \color{blue}(\color{gray}{\gamma_{00}}+\color{red}{\boldsymbol{u}_{ij}})
       \color{black}+ \color{blue}\boldsymbol{\beta_{1}}\color{gray}{\mathbf{w}_{ij}}
       \color{black}+ \color{red}{\boldsymbol{\varepsilon}_{ij}}
       $$
-      $$
-      Level&nbsp;2: \color{blue}{\boldsymbol{\beta}_{0j}}
-      = \color{gray}{\gamma_{00}}
-       \color{black}+ \color{red}{\boldsymbol{u}_{ij}}
-      $$
-      $$
-      \color{green}{\mathbf b} \sim \mathcal N(\mathbf 0,\mathbf G),\quad
-      \color{red}{\boldsymbol\varepsilon} \sim \mathcal N(\mathbf 0,\mathbf R)
-      $$
+    </div>
+    <div class="card">
       <center>
       <div class="code" style="font-size: 15px";>
         lme4::lmer(y ~ w + (1 | id), data=data) <br>
@@ -170,19 +156,6 @@ title: Formulas
       <div class="code" style="font-size: 15px";>
         lme4::lmer(y ~ w + (w | id), data=data) <br>
         nlme::lme(y ~ w, random = ~ w | id, data=data)
-      </div>
-      </center>
-    </div>
-
-    <div class="card">
-      $$
-      y_{ij} = \color{blue}{\beta_0} + \color{blue}{\beta_1} x_{ij}
-      + \color{green}{b_{0j}} + \color{red}{\varepsilon_{ij}}
-      $$
-      <center>
-      <div class="code" style="font-size: 15px";>
-        lme4::lmer(y ~ w + (w | id), data=data) <br>
-        nlme::lme(y ~ w , random = ~ w | id, data=data)
       </div>
       </center>
     </div>

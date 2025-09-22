@@ -88,9 +88,9 @@ title: Formulas
 
     <!-- Legende -->
     <div class="legend">
-      <span class="chip"><span class="dot fixed"></span>Coefficients (β)</span>
-      <span class="chip"><span class="dot error"></span>Residuals (ε)</span>
-      <span class="chip"><span class="dot matrix"></span>Predictors (X, Z)</span>
+      <span class="chip"><span class="dot fixed"></span>Coefficients</span>
+      <span class="chip"><span class="dot error"></span>Residuals</span>
+      <span class="chip"><span class="dot matrix"></span>Predictors</span>
     </div>
 
     <h2>1) Linear model (OLS)</h2>
@@ -101,6 +101,8 @@ title: Formulas
       \color{black}+ \color{blue}\beta_{1}\color{gray} x
       \color{black}+ \color{red}\varepsilon_{i}
       $$
+    </div>
+    <div class="card">
       <center>
       <div class="code" style="font-size: 15px";>
         lm(y ~ x, data = data)
@@ -131,7 +133,7 @@ title: Formulas
     <div class="card">
       $$
       Complete: y_{ij}
-      = \color{blue}\gamma_{00}\color{black}+\color{blue}\gamma_{01}\color{gray}{b_{j}}\color{black}+\color{red}{u_{0j}}
+      = \color{blue}\gamma_{00}\color{black}+\color{blue}\gamma_{01}\color{gray}b_{j}\color{black}+\color{red}u_{0j} <br>
       \color{black}+\color{blue}\gamma_{10}\color{gray}w_{ij} \color{black}+\color{blue}\gamma_{10}\color{gray}b_{j}\color{gray}w_{ij} \color{black}+\color{red}{u_{1j}}\color{gray}w_{ij}
       \color{black}+ \color{red}\varepsilon_{ij}
       $$

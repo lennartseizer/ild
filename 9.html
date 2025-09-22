@@ -114,25 +114,27 @@ title: Formulas
     <h2>2) Random Intercept Mixed-Effects-Model </h2>
     <div class="card">
       $$
-      Level &nbsp; 1: \mathbf{y}_{ij}
+      Level&ensp;1: \mathbf{y}_{ij}
       = \color{blue}\boldsymbol{\beta}_{0j}
       \color{black}+ \color{blue}\boldsymbol{\beta_{1}}\color{gray}{\mathbf{w}_{ij}}
       \color{black}+ \color{red}{\boldsymbol{\varepsilon}_{ij}}
       $$
       $$
-      Level &ensp; 2: \color{blue}{\boldsymbol{\beta}_{0j}}
-      = \color{gray}{\gamma_{00}}
-       \color{black}+ \color{red}{\boldsymbol{u}_{ij}}
+      Level&ensp;2: \color{blue}{\boldsymbol{\beta}_{0j}}
+      \color{black}= \color{blue}{\gamma_{00}}
+      \color{black}+ \color{blue}{\gamma_{01}}\color{gray}{\mathbf{b}_{j}}
+      \color{black}+ \color{red}{\boldsymbol{u}_{ij}}
       $$
       $$
-      \color{green}{\mathbf b} \sim \mathcal N(\mathbf 0,\mathbf G),\quad
-      \color{red}{\boldsymbol\varepsilon} \sim \mathcal N(\mathbf 0,\mathbf R)
+      Level&ensp;2: \color{blue}{\boldsymbol{\beta}_{1j}}
+      \color{black}= \color{gray}{\gamma_{10}}
+      \color{black}+ \color{red}{\boldsymbol{u}_{ij}}
       $$
     </div>
     <div class="card">
       $$
       Complete: \mathbf{y}_{ij}
-      = \color{blue}(\color{gray}{\gamma_{00}}+\color{red}{\boldsymbol{u}_{ij}})
+      = (\color{blue}{\gamma_{00}}+\color{red}{\boldsymbol{u}_{ij}}\color{black})
       \color{black}+ \color{blue}\boldsymbol{\beta_{1}}\color{gray}{\mathbf{w}_{ij}}
       \color{black}+ \color{red}{\boldsymbol{\varepsilon}_{ij}}
       $$

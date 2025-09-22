@@ -110,10 +110,10 @@ title: Formulas
       $$
       <center>
       <div class="code">lme4: y ~ 1 + x + (1 | gruppe)</div>
-      </center>center>
+      </center>
     </div>
 
-    <h2>2) Mixed-Effects-Modell</h2>
+    <h2>2) Unconditional Mixed-Effects-Model</h2>
     <div class="card">
       $$
       \mathbf y
@@ -125,6 +125,12 @@ title: Formulas
       \color{green}{\mathbf b} \sim \mathcal N(\mathbf 0,\mathbf G),\quad
       \color{red}{\boldsymbol\varepsilon} \sim \mathcal N(\mathbf 0,\mathbf R)
       $$
+      <div class="code">
+        # lme4
+        lmer(y ~ 1 + (1 | id), data=data)
+        # nlme
+        lme(y ~ 1, random = ~ 1 | id, data=data)</div>
+    </div>
     </div>
 
     <h2>3) Zufälliger Interzept (RI)</h2>
@@ -133,7 +139,24 @@ title: Formulas
       y_{ij} = \color{blue}{\beta_0} + \color{blue}{\beta_1} x_{ij}
       + \color{green}{b_{0j}} + \color{red}{\varepsilon_{ij}}
       $$
-      <div class="code">lme4: y ~ 1 + x + (1 | gruppe)</div>
+      <div class="code">
+        # lme4
+        lmer(y ~ 1 + (1 | id), data=data)
+        # nlme
+        lme(y ~ 1, random = ~ 1 | id, data=data)</div>
+    </div>
+
+    <h2>3) Zufälliger Interzept (RI)</h2>
+    <div class="card">
+      $$
+      y_{ij} = \color{blue}{\beta_0} + \color{blue}{\beta_1} x_{ij}
+      + \color{green}{b_{0j}} + \color{red}{\varepsilon_{ij}}
+      $$
+      <div class="code">
+        # lme4
+        lmer(y ~ 1 + (1 | id), data=data)
+        # nlme
+        lme(y ~ 1, random = ~ 1 | id, data=data)</div>
     </div>
 
     <h2>4) Zufälliger Interzept &amp; Steigung (RI+RS)</h2>

@@ -240,12 +240,31 @@ b              0.46     0.08   160    5.75   <0.001      # <-- γ01
       \color{black}+ \color{red}\varepsilon_{ij}
       \end{align*}
       $$
-      <center>
-      <div class="code" style="font-size: 15px";>
-        lme4::lmer(y ~ w + (w | id), data=data) <br>
-        nlme::lme(y ~ w, random = ~ w | id, data=data)
       </div>
-      </center>
+      <div class="card">
+      <pre class="code-block" style="font-size: 12px;">
+> fit <- nlme::lme(
+             fixed   = y ~ w + b,
+             random  = ~ 1 | id,
+             data    = data)
+> summary(fit)
+  
+Linear mixed-effects model fit by REML
+ Data: data 
+       AIC      BIC    logLik
+     512.3    523.8   -252.1
+
+Random effects:
+ Formula: ~1 | id
+        (Intercept)  Residual
+StdDev:     0.71      0.95                              # <-- u0j, εij
+
+Fixed effects: y ~ w 
+               Value Std.Error  DF   t-value p-value
+(Intercept)    1.92     0.38    38    5.05   <0.001      # <-- γ00 
+w              0.46     0.08   160    5.75   <0.001      # <-- β1
+b              0.46     0.08   160    5.75   <0.001      # <-- γ01
+      </pre>
     </div>
 
     <h2>3) Zufälliger Interzept (RI)</h2>

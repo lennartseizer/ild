@@ -149,16 +149,17 @@ lm(formula = y ~ x, data = data)
 
 Residuals:
     Min      1Q  Median      3Q     Max 
--1.1254 -0.4217 -0.0241  0.4305  1.2876 
+-1.1254 -0.4217 -0.0241  0.4305  1.2876                 # <-- e 
 
 Coefficients:
              Estimate Std. Error t value Pr(&gt;|t|)    
-(Intercept)    2.4806     0.1372  18.087  &lt;2e-16 ***
-x              1.2164     0.0725  16.782  &lt;2e-16 ***
+(Intercept)    2.4806     0.1372  18.087  &lt;2e-16 *** # <-- b0
+x              1.2164     0.0725  16.782  &lt;2e-16 *** # <-- b1
 ---
 Residual standard error: 0.612 on 98 degrees of freedom
 Multiple R-squared:  0.742, Adjusted R-squared:  0.738 
-F-statistic: 281.6 on 1 and 98 DF,  p-value: &lt; 2.2e-16</pre>
+F-statistic: 281.6 on 1 and 98 DF,  p-value: &lt; 2.2e-16
+      </pre>
       <p class="note">
         <span class="tag fixed">(Intercept) = \(\beta_0\)</span>
         <span class="tag fixed">x = \(\beta_1\)</span>

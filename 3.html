@@ -343,13 +343,18 @@ b              0.46     0.08   160    5.75   <0.001              # <-- γ01
       \color{black}= \color{blue}\gamma_{10}
       \color{black}+ \color{red}u_{1j}
       $$
+      $$
+      Level&ensp;2: \color{red}\varepsilon_{ij}
+      \color{black}= \color{blue}\rho\color{red}\varepsilon_{(i-1)j}
+      \color{black}+ \color{red}e_{ij}
+      $$
       <br>
       $$
       \begin{align*}
       Complete: y_{ij}
       = \color{blue}\gamma_{00}\color{black}+\color{blue}\gamma_{01}\color{gray}b_{j}\color{black}+\color{red}u_{0j} 
       \color{black}+\color{blue}\gamma_{10}\color{gray}w_{ij} \color{black}+\color{red}{u_{1j}}\color{gray}w_{ij}
-      \color{black}+ \color{red}\varepsilon_{ij}
+      \color{black}+ \color{blue}\rho\color{red}\varepsilon_{(i-1)j} \color{black}+ \color{red}e_{ij}
       \end{align*}
       $$
       </div>
@@ -358,6 +363,7 @@ b              0.46     0.08   160    5.75   <0.001              # <-- γ01
 > fit <- nlme::lme(
              fixed   = y ~ w + b,
              random  = ~ w | id,
+             correlation = corAR1(form = ~ time | id),
              data    = data)
 > summary(fit)
   
@@ -374,6 +380,11 @@ Random effects:
 w           0.3595829 0.049                                      # <-- u1j
 Residual    1.0050358                                            # <-- εij
 
+Correlation Structure: AR(1)
+ Formula: ~time | id 
+ Parameter estimate(s):
+      Phi 
+0.4925721                                                        # <-- ρ 
 Fixed effects: y ~ w + b 
                Value Std.Error  DF   t-value p-value
 (Intercept)    1.92     0.38    38    5.05   <0.001              # <-- γ00 

@@ -478,7 +478,7 @@ w:b            0.23     0.07   398    2.94   0.0035              # <-- γ11
       $$
       \text{Level 1: } y_{ijg}
       = \color{blue}\beta_{0jg}
-      \color{black}+ \color{blue}\beta_{1}\color{gray}w_{ijg}
+      \color{black}+ \color{blue}\beta_{1jg}\color{gray}w_{ijg}
       \color{black}+ \color{red}\varepsilon_{ijg}
       $$
       $$
@@ -489,13 +489,13 @@ w:b            0.23     0.07   398    2.94   0.0035              # <-- γ11
       $$
       \text{Level 2: } \color{blue}\beta_{0jg}
       \color{black}= \color{blue}\gamma_{00g}
-      \color{black}+ \color{blue}\gamma_{01g}\color{gray}b_{jg}
+      \color{black}+ \color{blue}\gamma_{01}\color{gray}b_{jg}
       \color{black}+ \color{red}u_{0jg}
       $$
       $$
       \text{Level 2: } \color{blue}\beta_{1jg}
       \color{black}= \color{blue}\gamma_{10g}
-      \color{black}+ \color{blue}\gamma_{11g}\color{gray}b_{jg}
+      \color{black}+ \color{blue}\gamma_{11}\color{gray}b_{jg}
       \color{black}+ \color{red}u_{1jg}
       $$
       $$
@@ -514,18 +514,18 @@ w:b            0.23     0.07   398    2.94   0.0035              # <-- γ11
       \text{Complete: } y_{ijg} 
       &= \color{blue}\delta_{000} \color{black}+ \color{red}v_{0g} \color{black} 
       + \color{blue}\gamma_{01}\color{gray}b_{jg} \color{black} 
-      + \color{red}u_{0j} \color{black}+\color{blue}\delta_{100}\color{black}+ \color{red}v_{1g}\color{gray}w_{ijg} \\
-      &\quad \color{black}+ \color{blue}\gamma_{11}\color{gray}b_{jg}\color{gray}w_{ijg} \color{black}+\color{red}u_{1jg}\color{gray}w_{ijg} \color{blue}\rho\color{red}\varepsilon_{(i-1)jg} \color{black}+ \color{red}e_{ijg}
+      + \color{red}u_{0jg} \color{black}+\color{blue}\delta_{100}\color{gray}w_{ijg}\color{black}+ \color{red}v_{1g}\color{gray}w_{ijg} \\
+      &\quad \color{black}+ \color{blue}\gamma_{11}\color{gray}b_{jg}\color{gray}w_{ijg} \color{black}+\color{red}u_{1jg}\color{gray}w_{ijg} \color{black}+\color{blue}\rho\color{red}\varepsilon_{(i-1)jg} \color{black}+ \color{red}e_{ijg}
       \end{align*}
       $$
       </div>
       <div class="card">
       <pre class="code-block" style="font-size: 12px;">
 > fit <- nlme::lme(
-             fixed   = y ~ w * b,
-             random  = ~ w | id,
-             correlation = corAR1(form = ~ time | id),
-             data    = data)
+             fixed       = y ~ w * b,
+             random      = ~ w | group/id,
+             correlation = corAR1(form = ~ time | group/id),
+             data        = data)
 > summary(fit)
   
 Linear mixed-effects model fit by REML
@@ -534,12 +534,18 @@ Linear mixed-effects model fit by REML
      512.3    523.8   -252.1
 
 Random effects:
- Formula: ~1 + w | id
+ Formula: ~1 + w | group
+ Structure: General positive-definite, Log-Cholesky parametrization
+            StdDev      Corr  
+(Intercept) 0.003118126 (Intr)                                   # <-- u0j
+x_wi        0.003376704 -0.01                                    # <-- u1j
+
+ Formula: ~1 + w | id %in% group
  Structure: General positive-definite, Log-Cholesky parametrization
             StdDev    Corr  
-(Intercept) 0.7288208 (Intr)                                     # <-- u0j
-w           0.3595829 0.049                                      # <-- u1j
-Residual    1.0050358                                            # <-- εij
+(Intercept) 0.8046809 (Intr)                                     # <-- v0g
+x_wi        0.1683426 0.082                                      # <-- v1g
+Residual    1.1369125                                            # <-- εijg
 
 Correlation Structure: AR(1)
  Formula: ~time | id 
@@ -548,8 +554,8 @@ Correlation Structure: AR(1)
 0.4925721                                                        # <-- ρ 
 Fixed effects: y ~ w + b 
                Value Std.Error  DF   t-value p-value
-(Intercept)    1.92     0.38    38    5.05   0.001               # <-- γ00 
-w              0.46     0.08   160    5.75   0.001               # <-- γ10
+(Intercept)    1.92     0.38    38    5.05   0.001               # <-- δ000
+w              0.46     0.08   160    5.75   0.001               # <-- δ100
 b              0.46     0.08   160    5.75   0.001               # <-- γ01
 w:b            0.23     0.07   398    2.94   0.0035              # <-- γ11
       </pre>

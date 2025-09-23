@@ -150,7 +150,7 @@ lm(formula = y ~ x, data = data)
 
 Residuals:
     Min      1Q  Median      3Q     Max 
--1.1254 -0.4217 -0.0241  0.4305  1.2876                     # <-- εi 
+-1.1254 -0.4217 -0.0241  0.4305  1.2876                       # <-- εi 
 
 Coefficients:
              Estimate Std. Error t value Pr(&gt;|t|)    
@@ -202,7 +202,7 @@ Linear mixed-effects model fit by REML
 Random effects:
  Formula: ~1 | id
         (Intercept)  Residual
-StdDev:     0.71      0.95                            # <-- u0j, εij
+StdDev:     0.71      0.95                              # <-- u0j, εij
 
 Fixed effects: y ~ w 
                Value Std.Error  DF   t-value p-value
@@ -212,7 +212,7 @@ b              0.46     0.08   160    5.75   <0.001      # <-- γ01
       </pre>
     </div>
 
-    <h2>3) Random Slope Mixed-Effects-Model</h2>
+    <h2>4) Full Random Mixed-Effects-Model</h2>
     <div class="card">
       $$
       Level&ensp;1: y_{ij}
@@ -228,7 +228,7 @@ b              0.46     0.08   160    5.75   <0.001      # <-- γ01
       $$
       $$
       Level&ensp;2: \color{blue}\beta_{1j}
-      \color{black}= \color{gray}\gamma_{10}
+      \color{black}= \color{blue}\gamma_{10}
       \color{black}+ \color{red}u_{1j}
       $$
       <br>
@@ -236,7 +236,7 @@ b              0.46     0.08   160    5.75   <0.001      # <-- γ01
       \begin{align*}
       Complete: y_{ij}
       = \color{blue}\gamma_{00}\color{black}+\color{blue}\gamma_{01}\color{gray}b_{j}\color{black}+\color{red}u_{0j} 
-      \color{black}+\color{blue}\gamma_{10}\color{gray}w_{ij} \color{black}+\color{blue}\gamma_{10}\color{gray}b_{j}\color{gray}w_{ij} \color{black}+\color{red}{u_{1j}}\color{gray}w_{ij}
+      \color{black}+\color{blue}\gamma_{10}\color{gray}w_{ij} \color{black}+\color{red}{u_{1j}}\color{gray}w_{ij}
       \color{black}+ \color{red}\varepsilon_{ij}
       \end{align*}
       $$

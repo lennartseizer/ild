@@ -168,13 +168,13 @@ F-statistic: 281.6 on 1 and 98 DF,  p-value: &lt; 2.2e-16
     <h2>2) Random Intercept Mixed-Effects-Model </h2>
     <div class="card">
       $$
-      Level&ensp;1: y_{ij}
+      \text{Level 1: } y_{ij}
       = \color{blue}\beta_{0j}
       \color{black}+ \color{blue}\beta_{1}\color{gray}w_{ij}
       \color{black}+ \color{red}\varepsilon_{ij}
       $$
       $$
-      Level&ensp;2: \color{blue}\beta_{0j}
+      \text{Level 2: } \color{blue}\beta_{0j}
       \color{black}= \color{blue}\gamma_{00}
       \color{black}+ \color{blue}\gamma_{01}\color{gray}b_{j}
       \color{black}+ \color{red}u_{0j}
@@ -182,7 +182,7 @@ F-statistic: 281.6 on 1 and 98 DF,  p-value: &lt; 2.2e-16
       <br>
       $$
       \begin{align*}
-      Complete: y_{ij}
+      \text{Complete: } y_{ij}
       = \color{blue}\gamma_{00}\color{black}+\color{blue}\gamma_{01}\color{gray}b_{j}\color{black}+\color{red}u_{0j} 
       \color{black}+\color{blue}\beta_{1}\color{gray}w_{ij}\color{black}+\color{red}\varepsilon_{ij}
       \end{align*}
@@ -217,25 +217,25 @@ b              0.46     0.08   160    5.75   <0.001         # <-- γ01
   <h2>3) Random Slope Mixed-Effects-Model </h2>
     <div class="card">
       $$
-      Level&ensp;1: y_{ij}
+      \text{Level 1: } y_{ij}
       = \color{blue}\beta_{0}
       \color{black}+ \color{blue}\beta_{1j}\color{gray}w_{ij}
       \color{black}+ \color{red}\varepsilon_{ij}
       $$
       $$
-      Level&ensp;2: \color{blue}\beta_{0j}
+      \text{Level 2: } \color{blue}\beta_{0j}
       \color{black}= \color{blue}\gamma_{00}
       \color{black}+ \color{blue}\gamma_{01}\color{gray}b_{j}
       $$
       $$
-      Level&ensp;2: \color{blue}\beta_{1j}
+      \text{Level 2: } \color{blue}\beta_{1j}
       \color{black}= \color{blue}\gamma_{10}
       \color{black}+ \color{red}u_{1j}
       $$
       <br>
       $$
       \begin{align*}
-      Complete: y_{ij}
+      \text{Complete: } y_{ij}
       = \color{blue}\gamma_{00} \color{black}+ \color{blue}\gamma_{01}\color{gray}b_{j}
       \color{black}+\color{blue}\beta_{1}\color{gray}w_{ij}\color{black}+\color{red}{u_{1j}}\color{gray}w_{ij}
       \color{black}+\color{red}\varepsilon_{ij}
@@ -271,26 +271,26 @@ b              0.46     0.08   160    5.75   <0.001         # <-- γ01
     <h2>4) Full Random Mixed-Effects-Model</h2>
     <div class="card">
       $$
-      Level&ensp;1: y_{ij}
+      \text{Level 1: } y_{ij}
       = \color{blue}\beta_{0j}
       \color{black}+ \color{blue}\beta_{1}\color{gray}w_{ij}
       \color{black}+ \color{red}\varepsilon_{ij}
       $$
       $$
-      Level&ensp;2: \color{blue}\beta_{0j}
+      \text{Level 2: } \color{blue}\beta_{0j}
       \color{black}= \color{blue}\gamma_{00}
       \color{black}+ \color{blue}\gamma_{01}\color{gray}b_{j}
       \color{black}+ \color{red}u_{0j}
       $$
       $$
-      Level&ensp;2: \color{blue}\beta_{1j}
+      \text{Level 2: } \color{blue}\beta_{1j}
       \color{black}= \color{blue}\gamma_{10}
       \color{black}+ \color{red}u_{1j}
       $$
       <br>
       $$
       \begin{align*}
-      Complete: y_{ij}
+      \text{Complete: } y_{ij}
       = \color{blue}\gamma_{00}\color{black}+\color{blue}\gamma_{01}\color{gray}b_{j}\color{black}+\color{red}u_{0j} 
       \color{black}+\color{blue}\gamma_{10}\color{gray}w_{ij} \color{black}+\color{red}{u_{1j}}\color{gray}w_{ij}
       \color{black}+ \color{red}\varepsilon_{ij}
@@ -334,31 +334,31 @@ b              0.46     0.08   160    5.75   <0.001              # <-- γ01
   
     <div class="card">
       $$
-      Level&ensp;1: y_{ij}
+      \text{Level 1: } y_{ij}
       = \color{blue}\beta_{0j}
       \color{black}+ \color{blue}\beta_{1}\color{gray}w_{ij}
       \color{black}+ \color{red}\varepsilon_{ij}
       $$
       $$
-      Level&ensp;2: \color{blue}\beta_{0j}
+      \text{Level 2: } \color{blue}\beta_{0j}
       \color{black}= \color{blue}\gamma_{00}
       \color{black}+ \color{blue}\gamma_{01}\color{gray}b_{j}
       \color{black}+ \color{red}u_{0j}
       $$
       $$
-      Level&ensp;2: \color{blue}\beta_{1j}
+      \text{Level 2: } \color{blue}\beta_{1j}
       \color{black}= \color{blue}\gamma_{10}
       \color{black}+ \color{red}u_{1j}
       $$
       $$
-      Level&ensp;2: \color{red}\varepsilon_{ij}
+      \text{Level 2: } \color{red}\varepsilon_{ij}
       \color{black}= \color{blue}\rho\color{red}\varepsilon_{(i-1)j}
       \color{black}+ \color{red}e_{ij}
       $$
       <br>
       $$
       \begin{align*}
-      Complete: y_{ij} 
+      \text{Complete: } y_{ij} 
       &= \color{blue}\gamma_{00} \color{black} 
       + \color{blue}\gamma_{01}\color{gray}b_{j} \color{black} 
       + \color{red}u_{0j} \color{black}+\color{blue}\gamma_{10}\color{gray}w_{ij} \color{black}+ \color{red}u_{1j}\color{gray}w_{ij} \\
@@ -410,7 +410,7 @@ b              0.46     0.08   160    5.75   <0.001              # <-- γ01
       \color{black}+ \color{red}\varepsilon_{ij}
       $$
       $$
-      \text{Level 1: } \color{blue}\beta_{0j}
+      \text{Level 2: } \color{blue}\beta_{0j}
       \color{black}= \color{blue}\gamma_{00}
       \color{black}+ \color{blue}\gamma_{01}\color{gray}b_{j}
       \color{black}+ \color{red}u_{0j}
@@ -473,7 +473,77 @@ w:b            0.23     0.07   398    2.94   0.0035              # <-- γ11
       </pre>
     </div>
 
+  <h2>5) Three-level Full Random Mixed-Effects-Model with AR(1) & Cross-level Moderation</h2>
+    <div class="card">
+      $$
+      \text{Level 1: } y_{ij}
+      = \color{blue}\beta_{0j}
+      \color{black}+ \color{blue}\beta_{1}\color{gray}w_{ij}
+      \color{black}+ \color{red}\varepsilon_{ij}
+      $$
+      $$
+      \text{Level 2: } \color{blue}\beta_{0j}
+      \color{black}= \color{blue}\gamma_{00}
+      \color{black}+ \color{blue}\gamma_{01}\color{gray}b_{j}
+      \color{black}+ \color{red}u_{0j}
+      $$
+      $$
+      \text{Level 2: } \color{blue}\beta_{1j}
+      \color{black}= \color{blue}\gamma_{10}
+      \color{black}+ \color{blue}\gamma_{11}\color{gray}b_{j}
+      \color{black}+ \color{red}u_{1j}
+      $$
+      $$
+      \text{Level 2: } \color{red}\varepsilon_{ij}
+      \color{black}= \color{blue}\rho\color{red}\varepsilon_{(i-1)j}
+      \color{black}+ \color{red}e_{ij}
+      $$
+      <br>
+      $$
+      \begin{align*}
+      \text{Complete: } y_{ij} 
+      &= \color{blue}\gamma_{00} \color{black} 
+      + \color{blue}\gamma_{01}\color{gray}b_{j} \color{black} 
+      + \color{red}u_{0j} \color{black}+\color{blue}\gamma_{10}\color{gray}w_{ij} \color{black}+ \color{blue}\gamma_{11}\color{gray}b_{j}\color{gray}w_{ij} \color{black}+\color{red}u_{1j}\color{gray}w_{ij} \\
+      &\quad + \color{blue}\rho\color{red}\varepsilon_{(i-1)j} \color{black}+ \color{red}e_{ij}
+      \end{align*}
+      $$
+      </div>
+      <div class="card">
+      <pre class="code-block" style="font-size: 12px;">
+> fit <- nlme::lme(
+             fixed   = y ~ w * b,
+             random  = ~ w | id,
+             correlation = corAR1(form = ~ time | id),
+             data    = data)
+> summary(fit)
+  
+Linear mixed-effects model fit by REML
+ Data: data 
+       AIC      BIC    logLik
+     512.3    523.8   -252.1
 
+Random effects:
+ Formula: ~1 + w | id
+ Structure: General positive-definite, Log-Cholesky parametrization
+            StdDev    Corr  
+(Intercept) 0.7288208 (Intr)                                     # <-- u0j
+w           0.3595829 0.049                                      # <-- u1j
+Residual    1.0050358                                            # <-- εij
+
+Correlation Structure: AR(1)
+ Formula: ~time | id 
+ Parameter estimate(s):
+      Phi 
+0.4925721                                                        # <-- ρ 
+Fixed effects: y ~ w + b 
+               Value Std.Error  DF   t-value p-value
+(Intercept)    1.92     0.38    38    5.05   0.001               # <-- γ00 
+w              0.46     0.08   160    5.75   0.001               # <-- γ10
+b              0.46     0.08   160    5.75   0.001               # <-- γ01
+w:b            0.23     0.07   398    2.94   0.0035              # <-- γ11
+      </pre>
+    </div>
     
 </body>
 </html>

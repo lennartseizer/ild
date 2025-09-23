@@ -234,7 +234,7 @@ b              0.46     0.08   160    5.75   <0.001         # <-- γ01
       $$
       \begin{align*}
       Complete: y_{ij}
-      = \color{blue}\beta_{0}
+      = \color{blue}\gamma_{00} \color{black}+ \color{blue}\gamma_{01}\color{gray}b_{j}
       \color{black}+\color{blue}\beta_{1}\color{gray}w_{ij}\color{black}+\color{red}\varepsilon_{ij}
       \end{align*}
       $$
@@ -323,39 +323,65 @@ b              0.46     0.08   160    5.75   <0.001              # <-- γ01
       </pre>
     </div>
 
-    <h2>3) Zufälliger Interzept (RI)</h2>
+  <h2>4) Full Random Mixed-Effects-Model with AR(1)</h2>
     <div class="card">
       $$
-      y_{ij} = \color{blue}{\beta_0} + \color{blue}{\beta_1} x_{ij}
-      + \color{green}{b_{0j}} + \color{red}{\varepsilon_{ij}}
+      Level&ensp;1: y_{ij}
+      = \color{blue}\beta_{0j}
+      \color{black}+ \color{blue}\beta_{1}\color{gray}w_{ij}
+      \color{black}+ \color{red}\varepsilon_{ij}
       $$
-      <div class="code">
-        # lme4
-        lmer(y ~ 1 + (1 | id), data=data)
-        # nlme
-        lme(y ~ 1, random = ~ 1 | id, data=data)</div>
+      $$
+      Level&ensp;2: \color{blue}\beta_{0j}
+      \color{black}= \color{blue}\gamma_{00}
+      \color{black}+ \color{blue}\gamma_{01}\color{gray}b_{j}
+      \color{black}+ \color{red}u_{0j}
+      $$
+      $$
+      Level&ensp;2: \color{blue}\beta_{1j}
+      \color{black}= \color{blue}\gamma_{10}
+      \color{black}+ \color{red}u_{1j}
+      $$
+      <br>
+      $$
+      \begin{align*}
+      Complete: y_{ij}
+      = \color{blue}\gamma_{00}\color{black}+\color{blue}\gamma_{01}\color{gray}b_{j}\color{black}+\color{red}u_{0j} 
+      \color{black}+\color{blue}\gamma_{10}\color{gray}w_{ij} \color{black}+\color{red}{u_{1j}}\color{gray}w_{ij}
+      \color{black}+ \color{red}\varepsilon_{ij}
+      \end{align*}
+      $$
+      </div>
+      <div class="card">
+      <pre class="code-block" style="font-size: 12px;">
+> fit <- nlme::lme(
+             fixed   = y ~ w + b,
+             random  = ~ w | id,
+             data    = data)
+> summary(fit)
+  
+Linear mixed-effects model fit by REML
+ Data: data 
+       AIC      BIC    logLik
+     512.3    523.8   -252.1
+
+Random effects:
+ Formula: ~1 + w | id
+ Structure: General positive-definite, Log-Cholesky parametrization
+            StdDev    Corr  
+(Intercept) 0.7288208 (Intr)                                     # <-- u0j
+w           0.3595829 0.049                                      # <-- u1j
+Residual    1.0050358                                            # <-- εij
+
+Fixed effects: y ~ w + b 
+               Value Std.Error  DF   t-value p-value
+(Intercept)    1.92     0.38    38    5.05   <0.001              # <-- γ00 
+w              0.46     0.08   160    5.75   <0.001              # <-- γ10
+b              0.46     0.08   160    5.75   <0.001              # <-- γ01
+      </pre>
     </div>
 
-    <h2>4) Zufälliger Interzept &amp; Steigung (RI+RS)</h2>
-    <div class="card">
-      $$
-      y_{ij} = (\color{blue}{\beta_0}+\color{green}{b_{0j}})
-      + (\color{blue}{\beta_1}+\color{green}{b_{1j}})x_{ij}
-      + \color{red}{\varepsilon_{ij}}
-      $$
-      <div class="code">lme4: y ~ 1 + x + (1 + x | gruppe)</div>
-    </div>
-
-    <h2>5) Marginale Verteilung</h2>
-    <div class="card">
-      $$
-      \mathbf y \sim \mathcal N\!\Big(
-      \color{gray}{\mathbf X}\,\color{blue}{\boldsymbol\beta},\;
-      \color{gray}{\mathbf Z}\,\mathbf G\,\color{gray}{\mathbf Z}^{\top} + \mathbf R
-      \Big)
-      $$
-    </div>
-  </div>
+    
 </body>
 </html>
 

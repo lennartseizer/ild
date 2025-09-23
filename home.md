@@ -1,6 +1,6 @@
 ---
 layout: page
-title: Mixed-effects model
+title: Home
 ---
 
 hahaha

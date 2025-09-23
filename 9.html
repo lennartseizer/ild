@@ -179,15 +179,17 @@ F-statistic: 281.6 on 1 and 98 DF,  p-value: &lt; 2.2e-16
       \begin{align*}
       Complete: y_{ij}
       = \color{blue}\gamma_{00}\color{black}+\color{blue}\gamma_{01}\color{gray}b_{j}\color{black}+\color{red}u_{0j} \\
-      \color{black}+\color{blue}\gamma_{10}\color{gray}w_{ij} \color{black}+\color{blue}\gamma_{10}\color{gray}b_{j}\color{gray}w_{ij} \color{black}+\color{red}{u_{1j}}\color{gray}w_{ij}
-      \color{black}+ \color{red}\varepsilon_{ij}
+      \color{black}+\color{blue}\beta_{1}\color{gray}w_{ij}\color{black}+\color{red}\varepsilon_{ij}
       \end{align*}
       $$
     </div>
     <div class="card">
       <pre class="code-block" style="font-size: 12px;">
-> mod <- lm(y ~ b, data = data)
-> summary(mod)
+> fit <- nlme::lme(
+             fixed   = y ~ w + b,
+             random  = ~ 1 | id,
+             data    = data)
+> summary(fit)
   
 Linear mixed-effects model fit by REML
  Data: data 
@@ -202,7 +204,8 @@ StdDev:     0.71      0.95                            # <-- u0j, εij
 Fixed effects: y ~ w 
                Value Std.Error  DF   t-value p-value
 (Intercept)    1.92     0.38    38    5.05   <0.001      # <-- γ00 
-w              0.46     0.08   160    5.75   <0.001      # <-- γ10 
+w              0.46     0.08   160    5.75   <0.001      # <-- β1
+b              0.46     0.08   160    5.75   <0.001      # <-- γ01
       </pre>
     </div>
 
@@ -224,6 +227,15 @@ w              0.46     0.08   160    5.75   <0.001      # <-- γ10
       Level&ensp;2: \color{blue}\beta_{1j}
       \color{black}= \color{gray}\gamma_{10}
       \color{black}+ \color{red}u_{1j}
+      $$
+      <br>
+      $$
+      \begin{align*}
+      Complete: y_{ij}
+      = \color{blue}\gamma_{00}\color{black}+\color{blue}\gamma_{01}\color{gray}b_{j}\color{black}+\color{red}u_{0j} \\
+      \color{black}+\color{blue}\gamma_{10}\color{gray}w_{ij} \color{black}+\color{blue}\gamma_{10}\color{gray}b_{j}\color{gray}w_{ij} \color{black}+\color{red}{u_{1j}}\color{gray}w_{ij}
+      \color{black}+ \color{red}\varepsilon_{ij}
+      \end{align*}
       $$
       <center>
       <div class="code" style="font-size: 15px";>

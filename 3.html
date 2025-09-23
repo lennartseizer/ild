@@ -212,6 +212,59 @@ b              0.46     0.08   160    5.75   <0.001         # <-- γ01
       </pre>
     </div>
 
+  <h2>3) Random Slope Mixed-Effects-Model </h2>
+    <div class="card">
+      $$
+      Level&ensp;1: y_{ij}
+      = \color{blue}\beta_{0}
+      \color{black}+ \color{blue}\beta_{1j}\color{gray}w_{ij}
+      \color{black}+ \color{red}\varepsilon_{ij}
+      $$
+      $$
+      Level&ensp;2: \color{blue}\beta_{0j}
+      \color{black}= \color{blue}\gamma_{00}
+      \color{black}+ \color{blue}\gamma_{01}\color{gray}b_{j}
+      $$
+      $$
+      Level&ensp;2: \color{blue}\beta_{1j}
+      \color{black}= \color{blue}\gamma_{10}
+      \color{black}+ \color{red}u_{1j}
+      $$
+      <br>
+      $$
+      \begin{align*}
+      Complete: y_{ij}
+      = \color{blue}\beta_{0}
+      \color{black}+\color{blue}\beta_{1}\color{gray}w_{ij}\color{black}+\color{red}\varepsilon_{ij}
+      \end{align*}
+      $$
+    </div>
+    <div class="card">
+      <pre class="code-block" style="font-size: 12px;">
+> fit <- nlme::lme(
+             fixed   = y ~ w + b,
+             random  = ~ -1 + w | id,
+             data    = data)
+> summary(fit)
+  
+Linear mixed-effects model fit by REML
+ Data: data 
+       AIC      BIC    logLik
+     512.3    523.8   -252.1
+
+Random effects:
+ Formula: ~-1 + w | id
+                w Residual
+StdDev: 0.1576767 1.265336                                 # <-- u1j, εij
+
+Fixed effects: y ~ w + b
+               Value Std.Error  DF   t-value p-value
+(Intercept)    1.92     0.38    38    5.05   <0.001         # <-- γ00
+w              0.46     0.08   160    5.75   <0.001         # <-- γ10
+b              0.46     0.08   160    5.75   <0.001         # <-- γ01
+      </pre>
+    </div>
+
     <h2>4) Full Random Mixed-Effects-Model</h2>
     <div class="card">
       $$

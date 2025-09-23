@@ -94,29 +94,34 @@ title: Formulas
     </div>
 
     <h2>1) Linear model (OLS)</h2>
-    <div class="card">
-      $$
-      y_{i}
-      = \color{blue}\beta_{0}
-      \color{black}+ \color{blue}\beta_{1}\color{gray} x
-      \color{black}+ \color{red}\varepsilon_{i}
-      $$
-    </div>
-    <div class="card">
-      <div class="code" style="font-size: 15px";>
-        lm(y ~ x, data = data) <br>
-        <br>
-        Call: <br>
-        lm(formula = y ~ x, data = data)<br>
-        <br>
-        Coefficients:<br>
-                     Estimate Std. Error t value Pr(>|t|) <br>   
-        (Intercept)   2.13    0.45        4.71   <0.001      # <-- β0 (blau)<br>
-        x             0.57    0.08        7.12   <0.001      # <-- β1 (blau, multipliziert mit x)<br>
-        Residual SE = 1.23 on 98 DF                          # <-- εi (rot)<br>
+<div class="card">
+  $$
+  y_{i}
+  = \color{blue}\beta_{0}
+  \color{black}+ \color{blue}\beta_{1}\color{gray} x
+  \color{black}+ \color{red}\varepsilon_{i}
+  $$
+</div>
+<div class="card">
+  <center>
+    <div class="code" style="font-size: 15px;">lm(y ~ x, data = data)</div>
+  </center>
+</div>
 
-      </div>
-    </div>
+<!-- Mocked R summary output with color-matched annotations -->
+<div class="card">
+
+Call:
+lm(formula = y ~ x, data = data)
+
+Coefficients:
+             Estimate  Std. Error  t value  Pr(>|t|)
+<span class="blue">(Intercept)</span>   <span class="blue">2.13</span>      0.45       4.71    &lt;0.001   <span class="light">← β<sub>0</sub> (fester Achsenabschnitt)</span>
+<span class="blue">x</span>               <span class="blue">0.57</span>      0.08       7.12    &lt;0.001   <span class="light">← β<sub>1</sub> × <span class="gray">x</span></span>
+
+Residual standard error: <span class="red">1.23</span> on 98 degrees of freedom  <span class="light">← Streuung von ε<sub>i</sub></span>
+  </pre>
+</div>
 
     <h2>2) Random Intercept Mixed-Effects-Model </h2>
     <div class="card">

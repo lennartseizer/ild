@@ -245,7 +245,7 @@ b              0.46     0.08   160    5.75   <0.001      # <-- γ01
       <pre class="code-block" style="font-size: 12px;">
 > fit <- nlme::lme(
              fixed   = y ~ w + b,
-             random  = ~ 1 | id,
+             random  = ~ w | id,
              data    = data)
 > summary(fit)
   
@@ -255,14 +255,17 @@ Linear mixed-effects model fit by REML
      512.3    523.8   -252.1
 
 Random effects:
- Formula: ~1 | id
-        (Intercept)  Residual
-StdDev:     0.71      0.95                              # <-- u0j, εij
+ Formula: ~1 + x_wi | id
+ Structure: General positive-definite, Log-Cholesky parametrization
+            StdDev    Corr  
+(Intercept) 0.7288208 (Intr)                             # <-- u0j
+x_wi        0.3595829 0.049                              # <-- u1j
+Residual    1.0050358                                    # <-- εij
 
 Fixed effects: y ~ w 
                Value Std.Error  DF   t-value p-value
 (Intercept)    1.92     0.38    38    5.05   <0.001      # <-- γ00 
-w              0.46     0.08   160    5.75   <0.001      # <-- β1
+w              0.46     0.08   160    5.75   <0.001      # <-- γ10
 b              0.46     0.08   160    5.75   <0.001      # <-- γ01
       </pre>
     </div>

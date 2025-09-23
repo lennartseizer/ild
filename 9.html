@@ -144,7 +144,11 @@ title: Formulas
     </div>
     <div class="card">
       <p class="note">Beispielhafte Konsolen-Ausgabe aus <code>R</code>:</p>
-      <pre class="code-block">Call:
+      <pre class="code-block">
+> mod <- lm(y ~ b, data = data)
+> summary(mod)
+  
+Call:
 lm(formula = y ~ x, data = data)
 
 Residuals:

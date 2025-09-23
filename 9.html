@@ -81,6 +81,38 @@ title: Formulas
       margin-top: .5rem;
       display: inline-block;
     }
+       .code-block {
+      font-family: monospace;
+      background: #111827;
+      color: #f3f4f6;
+      padding: .8rem 1rem;
+      border-radius: 8px;
+      margin-top: .5rem;
+      overflow-x: auto;
+      line-height: 1.4;
+    }
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: .35rem;
+      padding: .25rem .55rem;
+      border-radius: 999px;
+      font-size: .85rem;
+      font-weight: 600;
+      color: #0f172a;
+      background: #e2e8f0;
+      margin-right: .35rem;
+    }
+    .tag::before {
+      content: '';
+      width: .7rem;
+      height: .7rem;
+      border-radius: 50%;
+      display: inline-block;
+    }
+    .tag.fixed::before { background: blue; }
+    .tag.error::before { background: red; }
+    .tag.matrix::before { background: gray; }
   </style>
 </head>
 <body>
@@ -109,6 +141,29 @@ title: Formulas
         <center>
           <div class="code" style="font-size: 15px;">lm(y ~ x, data = data)</div>
         </center>
+    </div>
+    <div class="card">
+      <p class="note">Beispielhafte Konsolen-Ausgabe aus <code>R</code>:</p>
+      <pre class="code-block">Call:
+lm(formula = y ~ x, data = data)
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-1.1254 -0.4217 -0.0241  0.4305  1.2876 
+
+Coefficients:
+             Estimate Std. Error t value Pr(&gt;|t|)    
+(Intercept)    2.4806     0.1372  18.087  &lt;2e-16 ***
+x              1.2164     0.0725  16.782  &lt;2e-16 ***
+---
+Residual standard error: 0.612 on 98 degrees of freedom
+Multiple R-squared:  0.742, Adjusted R-squared:  0.738 
+F-statistic: 281.6 on 1 and 98 DF,  p-value: &lt; 2.2e-16</pre>
+      <p class="note">
+        <span class="tag fixed">(Intercept) = \(\beta_0\)</span>
+        <span class="tag fixed">x = \(\beta_1\)</span>
+        <span class="tag error">Residual standard error = \(\varepsilon_i\)</span>
+      </p>
     </div>
 
     <h2>2) Random Intercept Mixed-Effects-Model </h2>

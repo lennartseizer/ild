@@ -144,8 +144,8 @@ title: Formulas
       </div>
     <div class="card">
       <pre class="code-block" style="font-size: 12px;">
-> mod <- lm(y ~ b, data = data)
-> summary(mod)
+> fit <- lm(y ~ x, data = data)
+> summary(fit)
   
 Call:
 lm(formula = y ~ x, data = data)
@@ -218,7 +218,7 @@ b              0.46     0.08   160    5.75   <0.001         # <-- γ01
     <div class="card">
       $$
       \text{Level 1: } y_{ij}
-      = \color{blue}\beta_{0}
+      = \color{blue}\beta_{0j}
       \color{black}+ \color{blue}\beta_{1j}\color{gray}w_{ij}
       \color{black}+ \color{red}\varepsilon_{ij}
       $$
@@ -237,7 +237,7 @@ b              0.46     0.08   160    5.75   <0.001         # <-- γ01
       \begin{align*}
       \text{Complete: } y_{ij}
       = \color{blue}\gamma_{00} \color{black}+ \color{blue}\gamma_{01}\color{gray}b_{j}
-      \color{black}+\color{blue}\beta_{1}\color{gray}w_{ij}\color{black}+\color{red}{u_{1j}}\color{gray}w_{ij}
+      \color{black}+\color{blue}\gamma_{10}\color{gray}w_{ij}\color{black}+\color{red}{u_{1j}}\color{gray}w_{ij}
       \color{black}+\color{red}\varepsilon_{ij}
       \end{align*}
       $$
@@ -273,7 +273,7 @@ b              0.46     0.08   160    5.75   <0.001         # <-- γ01
       $$
       \text{Level 1: } y_{ij}
       = \color{blue}\beta_{0j}
-      \color{black}+ \color{blue}\beta_{1}\color{gray}w_{ij}
+      \color{black}+ \color{blue}\beta_{1j}\color{gray}w_{ij}
       \color{black}+ \color{red}\varepsilon_{ij}
       $$
       $$
@@ -326,7 +326,7 @@ b              0.46     0.08   160    5.75   <0.001              # <-- γ01
       </pre>
     </div>
 
-  <h2>4) Full Random Mixed-Effects-Model with AR(1)</h2>
+  <h2>5) Full Random Mixed-Effects-Model with AR(1)</h2>
 
     <figure>
     <img src="https://marcellovictorino.github.io/images/Linear-Regression-Part2/Serial%20Correlation%20cases.png">
@@ -336,7 +336,7 @@ b              0.46     0.08   160    5.75   <0.001              # <-- γ01
       $$
       \text{Level 1: } y_{ij}
       = \color{blue}\beta_{0j}
-      \color{black}+ \color{blue}\beta_{1}\color{gray}w_{ij}
+      \color{black}+ \color{blue}\beta_{1j}\color{gray}w_{ij}
       \color{black}+ \color{red}\varepsilon_{ij}
       $$
       $$
@@ -401,7 +401,7 @@ b              0.46     0.08   160    5.75   <0.001              # <-- γ01
       </pre>
     </div>
 
-  <h2>5) Full Random Mixed-Effects-Model with AR(1) & Cross-level Moderation</h2>
+  <h2>6) Full Random Mixed-Effects-Model with AR(1) & Cross-level Moderation</h2>
     <div class="card">
       $$
       \text{Level 1: } y_{ij}
@@ -464,7 +464,7 @@ Correlation Structure: AR(1)
  Parameter estimate(s):
       Phi 
 0.4925721                                                        # <-- ρ 
-Fixed effects: y ~ w + b 
+Fixed effects: y ~ w * b 
                Value Std.Error  DF   t-value p-value
 (Intercept)    1.92     0.38    38    5.05   0.001               # <-- γ00 
 w              0.46     0.08   160    5.75   0.001               # <-- γ10
@@ -473,7 +473,7 @@ w:b            0.23     0.07   398    2.94   0.0035              # <-- γ11
       </pre>
     </div>
 
-  <h2>6) Three-level Full Random Mixed-Effects-Model with AR(1) & Cross-level Moderation</h2>
+  <h2>7) Three-level Full Random Mixed-Effects-Model with AR(1) & Cross-level Moderation</h2>
     <div class="card">
       $$
       \text{Level 1: } y_{ijg}
@@ -537,22 +537,22 @@ Random effects:
  Formula: ~1 + w | group
  Structure: General positive-definite, Log-Cholesky parametrization
             StdDev      Corr  
-(Intercept) 0.003118126 (Intr)                                   # <-- u0j
-x_wi        0.003376704 -0.01                                    # <-- u1j
+(Intercept) 0.003118126 (Intr)                                   # <-- v0g
+w           0.003376704 -0.01                                    # <-- v1g
 
  Formula: ~1 + w | id %in% group
  Structure: General positive-definite, Log-Cholesky parametrization
             StdDev    Corr  
-(Intercept) 0.8046809 (Intr)                                     # <-- v0g
-x_wi        0.1683426 0.082                                      # <-- v1g
+(Intercept) 0.8046809 (Intr)                                     # <-- u0j
+w           0.1683426 0.082                                      # <-- u1j
 Residual    1.1369125                                            # <-- εijg
 
 Correlation Structure: AR(1)
- Formula: ~time | id 
+ Formula: ~time | group/id 
  Parameter estimate(s):
       Phi 
 0.4925721                                                        # <-- ρ 
-Fixed effects: y ~ w + b 
+Fixed effects: y ~ w * b 
                Value Std.Error  DF   t-value p-value
 (Intercept)    1.92     0.38    38    5.05   0.001               # <-- δ000
 w              0.46     0.08   160    5.75   0.001               # <-- δ100

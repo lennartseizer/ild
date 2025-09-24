@@ -8,10 +8,12 @@ title: "My Page"
 
 ```{r, echo = F}
 install.packages("dplyr")
+remotes::install_github("wviechtb/esmpack@v0.1-17")
 ```
 
 ```{r, message = F}
 library(dplyr)
+library(esmpack)
 ```
 
 <div class="code-with-copy">

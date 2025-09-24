@@ -4,6 +4,7 @@ title: "My Page"
 
 ```{r, echo = F}
 # load packages
+install.packages("dplyr")
 library(dplyr)
 ```
 

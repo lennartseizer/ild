@@ -46,9 +46,9 @@ esmpack::check.nomiss(obs, id, data=data)
 
 Study duration (in days)
 ```{r, message=FALSE}
-check.timeinvar(age, id, data=dat, na.rm=FALSE)
-check.timeinvar(sex, id, data=dat, na.rm=FALSE)
-check.timeinvar(status, id, data=dat, na.rm=FALSE)
+check.timeinvar(age, id, data=data, na.rm=FALSE)
+check.timeinvar(sex, id, data=data, na.rm=FALSE)
+check.timeinvar(status, id, data=data, na.rm=FALSE)
 ```
 
 ```{r}

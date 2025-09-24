@@ -3,16 +3,22 @@ title: "My Page"
 ---
 
 ```{r, echo = F}
-# load packages
 install.packages("dplyr")
+install.packages("kableExtra")
+```
+
+```{r, message = F}
 library(dplyr)
+library(kableExtra)
 ```
 
 ```{r}
 # load example data
-data <- tibble(read.delim("https://www.kuleuven.be/samenwerking/real/real-book/viechtbauer2022_data_esmda_example"))
+data <- dplyr::tibble(read.delim("https://www.kuleuven.be/samenwerking/real/real-book/viechtbauer2022_data_esmda_example"))
 
-head(data)
+kable(data, digits = 3) %>%
+  kable_styling(full_width = FALSE, position = "left") %>%
+  scroll_box(width = "80%", height = "400px")
 ```
 
 

@@ -1,13 +1,6 @@
 ---
-title: "My Page"
-output:
-  html_document:
-    self_contained: false     # keeps assets separate (better for GH Pages)
-    lib_dir: "libs"
-    css: "assets/css/site.css"
-    includes:
-      in_header: "includes/header.html"   # goes inside <head> or top of <body>
-      after_body: "includes/footer.html"  # at end of </body>
+layout: page
+title: Preprocessing
 ---
 
 

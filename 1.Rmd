@@ -11,11 +11,13 @@ Preprocessing can be organized along a reproducible workflow: (1) understand the
 ```{r}
 install.packages("dplyr")
 install.packages("ggplot2")
+install.packages("EMAtools")
 ```
 
 ```{r, message=FALSE}
 library(dplyr)
 library(ggplot2)
+library(EMAtools)
 ```
 
 ```{r, message=FALSE}
@@ -24,6 +26,13 @@ data <- read.delim("https://www.kuleuven.be/samenwerking/real/real-book/viechtba
 
 dplyr::tibble(data)
 ```
+
+```{r}
+# compute scales of positive and negative affect
+data$pa <- rowMeans(data[,c("mood_cheerf", "mood_relaxed", "mood_satisfi")])
+data$na <- rowMeans(data[,c("mood_irritat", "mood_anxious", "mood_down", "mood_guilty", "mood_insecur", "mood_lonely")])
+```
+
 
 # Design and sampling scheme
 
@@ -69,6 +78,21 @@ hist(aggregate(data, compl ~ id, sum)$compl,
 
 # Compute and transform variables
 
+between and within
+```{r}
+# positive affect
+data$pa_b <- EMAtools::pmean(data$id, data$pa)
+data$pa_w <- EMAtools::pcenter(data$id, data$pa)
+
+# negative affect
+data$na_b <- EMAtools::pmean(data$id, data$na)
+data$na_w <- EMAtools::pcenter(data$id, data$na)
+
+tibble(data[,c("id","pa","pa_b","pa_w")])
+```
+
+
+
 # First glimpse
 
 ```{r, message=FALSE}
@@ -79,6 +103,4 @@ data %>% filter(id %in% id_select) %>%
      geom_line() +
      geom_point() +
      facet_grid(id~., scales="free") 
-
-
 ```

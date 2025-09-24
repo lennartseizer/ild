@@ -11,13 +11,11 @@ Preprocessing can be organized along a reproducible workflow: (1) understand the
 ```{r}
 install.packages("dplyr")
 install.packages("ggplot2")
-install.packages("EMAtools")
 ```
 
 ```{r, message=FALSE}
 library(dplyr)
 library(ggplot2)
-library(EMAtools)
 ```
 
 ```{r, message=FALSE}
@@ -81,12 +79,13 @@ hist(aggregate(data, compl ~ id, sum)$compl,
 between and within
 ```{r}
 # positive affect
-data$pa_b <- EMAtools::pmean(data$id, data$pa)
-data$pa_w <- EMAtools::pcenter(data$id, data$pa)
+data$pa_b <- ave(data$pa, data$id, FUN = mean) # person-mean (between)
+data$pa_w <- data$pa - data$pa_b # person-mean centered (within)
 
 # negative affect
-data$na_b <- EMAtools::pmean(data$id, data$na)
-data$na_w <- EMAtools::pcenter(data$id, data$na)
+data$na_b <- ave(data$na, data$id, FUN = mean) # person-mean (between)
+data$na_w <- data$na - data$na_b # person-mean centered (within)
+
 
 tibble(data[,c("id","pa","pa_b","pa_w")])
 ```
@@ -104,3 +103,4 @@ data %>% filter(id %in% id_select) %>%
      geom_point() +
      facet_grid(id~., scales="free") 
 ```
+

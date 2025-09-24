@@ -15,7 +15,7 @@ install.packages("ggplot2")
 library(ggplot2)
 install.packages("remotes")
 library(remotes)
-remotes::install_github("wviechtb/esmpack@v0.1-17")
+remotes::install_github("wviechtb/esmpack")
 library(esmpack)
 ```
 

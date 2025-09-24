@@ -10,13 +10,12 @@ Preprocessing can be organized along a reproducible workflow: (1) understand the
 
 ```{r}
 install.packages("dplyr")
-library(dplyr)
 install.packages("ggplot2")
+```
+
+```{r, message=FALSE}
+library(dplyr)
 library(ggplot2)
-install.packages("remotes")
-library(remotes)
-remotes::install_github("wviechtb/esmpack")
-library(esmpack)
 ```
 
 ```{r, message=FALSE}
@@ -36,20 +35,19 @@ nrow(data)
 
 Missing values in design variables?
 ```{r}
-esmpack::check.nomiss(day, id, data=data)
-esmpack::check.nomiss(beep, id, data=data)
-esmpack::check.nomiss(obs, id, data=data)
+
 ```
 
+```{r, message=FALSE}
+vars <- c("age", "sex")
+
+data %>%
+  group_by(id) %>%
+  summarise(across(all_of(vars), n_distinct)) %>%
+  mutate(across(all_of(vars), ~ .x == 1))
+```
 
 # Participants response behaviors
-
-Study duration (in days)
-```{r, message=FALSE}
-check.timeinvar(age, id, data=data, na.rm=FALSE)
-check.timeinvar(sex, id, data=data, na.rm=FALSE)
-check.timeinvar(status, id, data=data, na.rm=FALSE)
-```
 
 ```{r}
 # compute response delays
@@ -57,6 +55,15 @@ data$delay <- data$resptime - data$beeptime
 
 # barplot of the delay values
 barplot(table(data$delay), xlab="Delay in Minutes")
+```
+
+```{r}
+# compute the response frequencies
+data$compl <- as.numeric(complete.cases(data))
+
+# histogram of the response frequencies
+hist(aggregate(data, compl ~ id, sum)$compl, 
+     col="lightgray", xlab="Response Frequency", right=FALSE)
 ```
 
 
@@ -75,4 +82,3 @@ data %>% filter(id %in% id_select) %>%
 
 
 ```
-

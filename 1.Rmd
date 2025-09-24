@@ -2,6 +2,10 @@
 title: "My Page"
 ---
 
+```{r, echo = F}
+# load packages
+library(dplyr)
+```
 
 ```{r}
 # load example data
@@ -9,4 +13,5 @@ data <- tibble(read.delim("https://www.kuleuven.be/samenwerking/real/real-book/v
 
 head(data)
 ```
+
 

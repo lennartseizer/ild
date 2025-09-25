@@ -8,24 +8,26 @@ Preprocessing can be organized along a reproducible workflow: (1) understand the
 <img src="https://www.researchgate.net/profile/Sheen-Levine/publication/325941519/figure/fig2/AS:824194581422080@1573514709439/The-Datasaurus-Dozen-Matejka-Fitzmaurice-2017-an-extension-of-Anscombes-quartet.ppm">
 </figure>
 
-```{r, echo=F}
+```{r, echo=F, warning=F}
 install.packages("dplyr")
 install.packages("ggplot2")
-install.packages("kable")
 ```
 
 ```{r, message=FALSE}
 # load packages
 library(dplyr)
 library(ggplot2)
-library(kable)
 
 # load example data
 data <- read.delim("https://www.kuleuven.be/samenwerking/real/real-book/viechtbauer2022_data_esmda_example")
 
 dplyr::tibble(data)
+head(data)
+summary(data)
+str(data)
+data
 ```
-\tiny
+
 ```{r}
 # compute scales of positive and negative affect
 data$pa <- rowMeans(data[,c("mood_cheerf", "mood_relaxed", "mood_satisfi")])

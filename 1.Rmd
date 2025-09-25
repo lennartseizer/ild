@@ -11,12 +11,14 @@ Preprocessing can be organized along a reproducible workflow: (1) understand the
 ```{r, echo=F}
 install.packages("dplyr")
 install.packages("ggplot2")
+install.packages("kable")
 ```
 
 ```{r, message=FALSE}
 # load packages
 library(dplyr)
 library(ggplot2)
+library(kable)
 
 # load example data
 data <- read.delim("https://www.kuleuven.be/samenwerking/real/real-book/viechtbauer2022_data_esmda_example")

@@ -5,7 +5,10 @@ title: "My Page"
 Preprocessing can be organized along a reproducible workflow: (1) understand the study design, (2) reliably import the raw data, (3) validate measurement windows, (4) classify missing and problematic observations, (5) compute scales and derived variables, (6) generate the analysis dataset for the target model (e.g., LMM). Each step should be documented in scripts to ensure that the analyses remain transparent and reproducible. 
 
 <figure>
-<img src="https://www.researchgate.net/profile/Sheen-Levine/publication/325941519/figure/fig2/AS:824194581422080@1573514709439/The-Datasaurus-Dozen-Matejka-Fitzmaurice-2017-an-extension-of-Anscombes-quartet.ppm">
+  <img src="https://www.researchgate.net/profile/Sheen-Levine/publication/325941519/figure/fig2/AS:824194581422080@1573514709439/The-Datasaurus-Dozen-Matejka-Fitzmaurice-2017-an-extension-of-Anscombes-quartet.ppm" alt="The Datasaurus Dozen">
+  <figcaption style="color: gray; font-size: 0.8em;">
+    The Datasaurus Dozen (Matejka & Fitzmaurice, 2017) – an extension of Anscombe’s quartet.
+  </figcaption>
 </figure>
 
 
@@ -15,6 +18,12 @@ install.packages("dplyr")
 install.packages("ggplot2")
 ```
 
+<figure>
+ <img src="https://swcarpentry.github.io/r-novice-gapminder/fig/14-tidyr-fig3.png">  
+  <figcaption style="color: gray; font-size: 0.8em;">
+    From wide to long format with $$pivot_longer()$$.
+  </figcaption>
+</figure>
 <figure>
 <img src="https://swcarpentry.github.io/r-novice-gapminder/fig/14-tidyr-fig3.png">
 </figure>

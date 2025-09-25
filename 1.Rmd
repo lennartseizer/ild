@@ -121,3 +121,5 @@ data %>% filter(id %in% id_select) %>%
      facet_grid(id~., scales="free") 
 ```
 
+# References & Further reading
+Matejka, J., & Fitzmaurice, G. 2017. Same stats, different graphs: Generating datasets with varied appearance andidentical statistics through simulated annealing. Paper presented at the CHI 2017, Denver, CO, USA.

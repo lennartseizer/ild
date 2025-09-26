@@ -2,20 +2,96 @@
 title: "Power analysis"
 ---
 
-```{r, echo=FALSE}
-install.packages("simr")
+```{r, include=F}
+#install.packages("simr")
 ```
 
-There are several approaches to conduct power analyses for LMMs in `R`:
-* *simr*: Simulation-based function to estimate power of LMMs.
-* *mlpwr*: ML algorithm to find the optimal sample size and number of time points.
-* *PowerAnalysisLM*: A Shiny app for (longitudinal) LLMs that account for temporal dependencies in multi-level data.
+There are several approaches to conduct power analyses for LMMs in `R`:  
+- **simr**: Simulation-based function to estimate power of LMMs.  
+- **mlpwr**: ML algorithm to find the optimal sample size and number of time points.  
+- **PowerAnalysisLM**: A Shiny app for (longitudinal) LLMs that account for temporal dependencies in multi-level data.
 
 # Example using `simr`:
-```{r}
+```{r, message=F}
+# load package
 library(simr)
+
+# seed
+set.seed(123)
+
+# create design data
+id <- factor(1:20)
+time <- 1:7
+group <- c("control", "intervention")
+
+data <- data.frame(id = rep(id, each = length(time)),
+                   time = rep(time, length(id)),
+                   group = rep(rep(group, each = length(time)), length(id)/2))
+
+head(data, n = 20)
 ```
 
+```{r}
+# intercept and slopes for intervention, time, and intervention:time
+fixed <- c(5, 0, 0.1, 0.2)
+
+# random intercepts (variance)
+rand <- list(0.5)
+
+# residual (standard deviation)
+res <- 2
+```
+
+```{r}
+# fit model
+model <- makeLmer(y ~ group*time + (1|id),
+                  fixef=fixed, VarCorr=rand, sigma=res, data=data)
+summary(model)
+```
+
+# Power analysis
+```{r, results='hide', message=F}
+sim <- powerSim(model, nsim = 100, test = fcompare(y ~ time))
+```
+
+```{r}
+sim
+```
+
+# Changing the number of participants
+```{r, results='hide', message=F}
+model_ext_id <- extend(model, along = "id", n = 50)
+p_curve <- powerCurve(model_ext_id, nsim = 100, test = fcompare(y~time), 
+                            along = "id", breaks = c(10, 20, 30, 40, 50))
+```
+
+```{r}
+plot(p_curve)
+```
+
+
+# Changing the number of timepoints
+```{r, results='hide', message=F}
+model_ext_time <- extend(model, within = "group+id", n = 28)
+p_curve <- powerCurve(model_ext_time, nsim = 100, test=fcompare(y ~ time), 
+                            within = "group+id", breaks = c(7, 14, 21, 28))
+```
+
+```{r}
+plot(p_curve)
+```
+
+# Changing both the number of participants and timepoints
+```{r, results='hide', message=F}
+model_ext_all <- extend(model, along = "id", n = 40)
+model_ext_all <- extend(model, within = "group+id", n = 14)
+
+sim <- powerSim(model_ext_all, nsim = 100, test = fcompare(y ~ time))
+```
+
+```{r}
+sim
+```
 
 
 

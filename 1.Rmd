@@ -14,8 +14,15 @@ Preprocessing can be organized along a reproducible workflow: (1) understand the
 
 # Set environment
 ```{r, echo=F, warning=F}
-install.packages("dplyr")
-install.packages("ggplot2")
+cran_repo <- "https://cloud.r-project.org"
+
+if (!requireNamespace("dplyr", quietly = TRUE)) {
+  install.packages("dplyr", repos = cran_repo)
+}
+
+if (!requireNamespace("ggplot2", quietly = TRUE)) {
+  install.packages("ggplot2", repos = cran_repo)
+}
 ```
 
 <figure>

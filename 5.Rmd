@@ -1,9 +1,12 @@
 ---
 title: "Power analysis"
+output:
+  html_document:
+    self_contained: no
 ---
 
 ```{r, include=F}
-install.packages("simr")
+#install.packages("simr")
 ```
 
 There are several approaches to conduct power analyses for LMMs in `R`:  
@@ -12,16 +15,25 @@ There are several approaches to conduct power analyses for LMMs in `R`:
 - **PowerAnalysisLM**: A Shiny app for (longitudinal) LLMs that account for temporal dependencies in multi-level data.
 
 # Example using `simr`:
+
 ```{r, message=F}
 # load package
 library(simr)
 
 # seed
 set.seed(123)
+```
 
+**Planned study**:  
+Intervention for patients with depression. Participants are randomized to treatment vs control groups and complete weekly PHQ-9 assessments. A linear mixed-effects model with random intercepts and slopes evaluates the week × group interaction.
+
+**Model outline**:  
+`PHQ9 ~ week * group + (week | id)`
+
+```{r, message=F}
 # create design data
-id <- factor(1:20)
-time <- 1:7
+id <- factor(1:40)
+time <- 1:6
 group <- c("control", "intervention")
 
 data <- data.frame(id = rep(id, each = length(time)),
@@ -32,42 +44,55 @@ data <- data.frame(id = rep(id, each = length(time)),
 head(data, n = 20)
 ```
 
+**Plausible parameter values**:  
+Fixed effects: 
+`b0` (baseline mean, control): 14   
+`b1` (weekly change, control): −0.2/week   
+`b2` (baseline arm difference): 0   
+`b3` (additional weekly change with treatment): −0.5/week   
+  
+Random effects (between-person variability)   
+SD(b0) (random intercept): 3 (Var = 9)  
+SD(b1) (random slope per week): 0.25 (Var = 0.0625)  
+Corr(b0, b1): −0.3 (people starting higher tend to improve faster)   
+  
+Residual SD: 2.5 (Var = 6.25)
+
 ```{r}
 # intercept and slopes for group, time, and group:time
-fixed <- c(5, 0, 0.1, 0.2)
+fixed <- c(14, 0, -0.2, -0.5)
 
-# random intercepts (variance)
-rand <- list(0.5)
+# random intercepts and slope (variance)
+rand <- list(9, -0.3, 0.0625)
 
 # residual (standard deviation)
-res <- 2
+res <- 2.5
 ```
 
 ```{r}
 # fit model
-model <- makeLmer(y ~ group*time + (1|id),
+model <- makeLmer(y ~ group * time + (time|id),
                   fixef=fixed, VarCorr=rand, sigma=res, data=data)
 summary(model)
 ```
 
-
 ```{r, results='hide', message=F}
 # power analysis
-sim <- powerSim(model, nsim = 100, test = fcompare(y ~ time))
+sim <- powerSim(model, nsim = 250, test = fixed("group:time"))
 ```
 
 ```{r}
 sim
 ```
 
-
 ```{r, results='hide', message=F}
 # changing the number of participants
-model_ext_id <- extend(model, along = "id", n = 50)
-p_curve <- powerCurve(model_ext_id, nsim = 100, 
-                      test = fcompare(y~time), 
+model_ext_id <- extend(model, along = "id", n = 100)
+
+p_curve <- powerCurve(model_ext_id, nsim = 250, 
+                      test = fixed("group:time"), 
                       along = "id", 
-                      breaks = c(10, 20, 30, 40, 50))
+                      breaks = c(20, 40, 60, 80, 100))
 ```
 
 ```{r}
@@ -76,11 +101,12 @@ plot(p_curve)
 
 ```{r, results='hide', message=F}
 # changing the number of timepoints
-model_ext_time <- extend(model, within = "group+id", n = 28)
-p_curve <- powerCurve(model_ext_time, nsim = 100, 
-                      test = fcompare(y ~ time), 
-                      within = "group+id", 
-                      breaks = c(7, 14, 21, 28))
+model_ext_time <- extend(model, along = "time", n = 12)
+
+p_curve <- powerCurve(model_ext_time, nsim = 250, 
+                      test = fixed("group:time"), 
+                      along = "time", 
+                      breaks = c(4, 6, 8, 10, 12))
 ```
 
 ```{r}
@@ -89,18 +115,24 @@ plot(p_curve)
 
 ```{r, results='hide', message=F}
 # changing both the number of participants and timepoints
-model_ext_all <- extend(model, along = "id", n = 40)
-model_ext_all <- extend(model, within = "group+id", n = 14)
+# create design data
+id <- factor(1:80)
+time <- 1:8
+group <- c("control", "intervention")
 
-sim <- powerSim(model_ext_all, nsim = 100, test = fcompare(y ~ time))
+data <- data.frame(id = rep(id, each = length(time)),
+                   time = rep(time, length(id)),
+                   group = rep(rep(group, each = length(time)), 
+                               length(id)/2))
+
+# fit model
+model_final <- makeLmer(y ~ group*time + (time|id),
+                  fixef=fixed, VarCorr=rand, sigma=res, data=data)
+
+# power analysis
+sim <- powerSim(model_final, nsim = 250, test = fixed("group:time"))
 ```
 
 ```{r}
 sim
 ```
-
-
-
-
-
-

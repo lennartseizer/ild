@@ -6,7 +6,7 @@ output:
 ---
 
 ```{r, include=F}
-#install.packages("simr")
+install.packages("simr")
 ```
 
 There are several approaches to conduct power analyses for LMMs in `R`:  

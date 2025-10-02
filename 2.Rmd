@@ -8,6 +8,7 @@ output:
 ```{r, include=FALSE}
 install.packages("dplyr")
 install.packages("ggplot2")
+install.packages("cowplot")
 ```
 
 Preprocessing can be organized along a reproducible workflow: (1) understand the study design, (2) reliably import the raw data, (3) validate measurement windows, (4) classify missing and problematic observations, (5) compute scales and derived variables, (6) generate the analysis dataset for the target model (e.g., LMM). Each step should be documented in scripts to ensure that the analyses remain transparent and reproducible. 
@@ -21,6 +22,7 @@ Preprocessing can be organized along a reproducible workflow: (1) understand the
 ```{r, message=FALSE}
 library(dplyr)
 library(ggplot2)
+library(cowplot)
 ```
 
 # Get data
@@ -74,17 +76,21 @@ data %>%
 
 # Participants response behaviors
 
-```{r, fig.show="hold", out.width="50%"}
+```{r, fig.show="hold"}
 # compute the response frequencies
 data$compl <- !is.na(data$resptime)
 
 # histogram of the response frequencies
-hist(aggregate(data, compl ~ id, sum)$compl, main = "Response Frequency",
-     col="lightgray", xlab="Number of assessments", right=FALSE)
+p_comp1 <- ggplot(aggregate(data, compl ~ id, sum), aes(x = compl)) +
+  geom_bar() + theme_minimal() + xlab("Number of assessments") +
+  ggtitle("Response Frequency")
 
 # histogram of the compliance
-hist(aggregate(data, compl ~ id, sum)$compl / 60 * 100, main = "Response Frequency",
-     col="lightgray", xlab="Percentage of assessments", right=FALSE)
+p_comp2 <- ggplot(aggregate(data, compl ~ id, sum), aes(x = compl / 60 * 100)) +
+  geom_bar() + theme_minimal() + xlab("Number of assessments") +
+  ggtitle("Response Frequency")
+
+plot_grid(p_comp1, p_comp2)
 
 # summary of compliance
 summary(aggregate(data, compl ~ id, sum)$compl / 60 * 100)
@@ -183,6 +189,6 @@ data %>% filter(id %in% id_select) %>%
      geom_point() 
 ```
 
-
 # References & Further reading
 
+Matejka, J., & Fitzmaurice, G. (2017). Same stats, different graphs: generating datasets with varied appearance and identical statistics through simulated annealing. In Proceedings of the 2017 CHI conference on human factors in computing systems (pp. 1290-1294).

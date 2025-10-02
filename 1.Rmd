@@ -2,10 +2,7 @@
 title: "My Page"
 output:
   html_document:
-    df_print: paged
     self_contained: no
-  word_document: default
-  pdf_document: default
 ---
 
 Preprocessing can be organized along a reproducible workflow: (1) understand the study design, (2) reliably import the raw data, (3) validate measurement windows, (4) classify missing and problematic observations, (5) compute scales and derived variables, (6) generate the analysis dataset for the target model (e.g., LMM). Each step should be documented in scripts to ensure that the analyses remain transparent and reproducible. 
@@ -22,23 +19,39 @@ data <- read.delim("https://www.kuleuven.be/samenwerking/real/real-book/viechtba
 dplyr::tibble(data)
 ```
 
+**Design variables**: the study `day` (1 to 6), the `beep` number within
+each day (1 to 10) and `beeptime` (in minutes after midnight) on each day, the overall number of observations `obs` (1 to 60), the response time `resptime` (in minutes after midnight)
+
+**Subject-level, time-invariant variables**: the participants' `age` (in years), `sex` (female, male), and mental
+health `status` (control, depressed, psychotic)  
+
+**Time-varying response variables**: 3 items to assess positive affect and 6 items to assess negative affect (1 to 7 Likert scale), the pleasantness of events that had occurred since the previous beep `eventpl` (−3 to +3 bipolar scale), whether the person was alone at the time of the beep `soc_alone` (1 = alone, 0 = not alone) and when the person was not alone) a rating how pleasant the company is `soc_pleasant` (1 to 7 Likert scale), and whether they had consumed coffee / alcohol since the previous beep (1 = yes, 0 = no)
 
 # Design and sampling scheme
 
-Number of subjects and planned observations 
 ```{r}
+# number of participants
 length(unique(data$id))
+
+# number of planned observations 
 nrow(data)
 ```
 
-Missing values in design variables?
 ```{r}
+# missing values in design variables?
 
 ```
 
 ```{r, message=FALSE}
-vars <- c("age", "sex")
+# variance in time-invariant variables?
+vars <- c("age", "sex", "status")
 
+data %>%
+  group_by(id) %>%
+  summarise(across(all_of(vars), ~ n_distinct(.) == 1), .groups = "drop") %>%
+  summarise(across(all_of(vars), all))
+
+# investigate further
 data %>%
   group_by(id) %>%
   summarise(across(all_of(vars), n_distinct)) %>%
@@ -48,6 +61,22 @@ data %>%
 # Participants response behaviors
 
 ```{r}
+# compute the response frequencies
+data$compl <- !is.na(data$resptime)
+
+# histogram of the response frequencies
+hist(aggregate(data, compl ~ id, sum)$compl, main = "Response Frequency",
+     col="lightgray", xlab="Number of assessments", right=FALSE)
+
+# histogram of the compliance
+hist(aggregate(data, compl ~ id, sum)$compl / 60, main = "Response Frequency",
+     col="lightgray", xlab="Percentage of assessments", right=FALSE)
+
+# summary of compliance
+summary(aggregate(data, compl ~ id, sum)$compl / 60)
+```
+
+```{r}
 # compute response delays
 data$delay <- data$resptime - data$beeptime
 
@@ -55,27 +84,19 @@ data$delay <- data$resptime - data$beeptime
 barplot(table(data$delay), xlab="Delay in Minutes")
 ```
 
-```{r}
-# compute the response frequencies
-data$compl <- as.numeric(complete.cases(data))
-
-# histogram of the response frequencies
-hist(aggregate(data, compl ~ id, sum)$compl, 
-     col="lightgray", xlab="Response Frequency", right=FALSE)
-```
-
-
 # Compute and transform variables
 
 ```{r}
 # compute scales of positive and negative affect
 data$pa <- rowMeans(data[,c("mood_cheerf", "mood_relaxed", "mood_satisfi")])
 
-data$na <- rowMeans(data[,c("mood_irritat", "mood_anxious", "mood_down", "mood_guilty", "mood_insecur", "mood_lonely")])
+data$na <- rowMeans(data[,c("mood_irritat", "mood_anxious", "mood_down", 
+                            "mood_guilty", "mood_insecur", "mood_lonely")])
 ```
 
-between and within
 ```{r}
+# separate variables into within and between parts
+
 # positive affect
 data$pa_b <- ave(data$pa, data$id, FUN=function(x)mean(x, na.rm = TRUE)) # person-mean (between)
 data$pa_w <- data$pa - data$pa_b # person-mean centered (within)
@@ -109,6 +130,31 @@ data %>% filter(id %in% id_select) %>%
      facet_grid(id~., scales="free") 
 ```
 
+```{r, echo=FALSE}
+# loop for time series plots
+id_chunks <- seq(1, length(data$id), 5)
+
+for (i in id_chunks) {
+data %>% filter(id %in% data$id[i:i+4]) %>%
+     ggplot(aes(x=obs, y=mood_relaxed)) +
+     geom_line() +
+     geom_point() +
+     facet_grid(id~., scales="free")
+}
+```
+
+```{r}
+# plot within and between parts
+data %>% filter(id %in% id_select) %>%
+     ggplot(aes(x = obs, y = pa_b)) +
+     geom_line() +
+     geom_point() 
+
+data %>% filter(id %in% id_select) %>%
+     ggplot(aes(x = obs, y = pa_w)) +
+     geom_line() +
+     geom_point() 
+```
 
 
 # References & Further reading

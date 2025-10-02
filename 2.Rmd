@@ -5,23 +5,31 @@ output:
     self_contained: no
 ---
 
-Preprocessing can be organized along a reproducible workflow: (1) understand the study design, (2) reliably import the raw data, (3) validate measurement windows, (4) classify missing and problematic observations, (5) compute scales and derived variables, (6) generate the analysis dataset for the target model (e.g., LMM). Each step should be documented in scripts to ensure that the analyses remain transparent and reproducible. 
-
 ```{r, include=FALSE}
 install.packages("dplyr")
 install.packages("ggplot2")
 ```
+
+Preprocessing can be organized along a reproducible workflow: (1) understand the study design, (2) reliably import the raw data, (3) validate measurement windows, (4) classify missing and problematic observations, (5) compute scales and derived variables, (6) generate the analysis dataset for the target model (e.g., LMM). Each step should be documented in scripts to ensure that the analyses remain transparent and reproducible. 
+
+<figure>
+    <img src="https://www.researchgate.net/profile/Sheen-Levine/publication/325941519/figure/fig2/AS:824194581422080@1573514709439/The-Datasaurus-Dozen-Matejka-Fitzmaurice-2017-an-extension-of-Anscombes-quartet.ppm">
+    <figcaption>The Datasaurus Dozen: All of them have identical descriptive statistics (Matejka & Fitzmaurice, 2017).
+  </figcaption>
+</figure>
 
 ```{r, message=FALSE}
 library(dplyr)
 library(ggplot2)
 ```
 
+# Get data
+
 ```{r, message=FALSE}
 # load example data
 data <- read.delim("https://www.kuleuven.be/samenwerking/real/real-book/viechtbauer2022_data_esmda_example")
 
-dplyr::tibble(data)
+str(data)
 ```
 
 **Design variables**: the study `day` (1 to 6), the `beep` number within
@@ -31,6 +39,10 @@ each day (1 to 10) and `beeptime` (in minutes after midnight) on each day, the o
 health `status` (control, depressed, psychotic)  
 
 **Time-varying response variables**: 3 items to assess positive affect and 6 items to assess negative affect (1 to 7 Likert scale), the pleasantness of events that had occurred since the previous beep `eventpl` (−3 to +3 bipolar scale), whether the person was alone at the time of the beep `soc_alone` (1 = alone, 0 = not alone) and when the person was not alone) a rating how pleasant the company is `soc_pleasant` (1 to 7 Likert scale), and whether they had consumed coffee / alcohol since the previous beep (1 = yes, 0 = no)
+
+<figure>
+    <img src="https://carpentry.library.ucsb.edu/2023-01-23-ucsb-r/fig/14-tidyr-fig3.png">
+</figure>
 
 # Design and sampling scheme
 
@@ -44,28 +56,25 @@ nrow(data)
 
 ```{r}
 # missing values in design variables?
+design_vars <- c("id", "day", "beep", "beeptime", "obs")
 
+data %>%
+  summarise(across(all_of(design_vars), ~ any(is.na(.))))
 ```
 
 ```{r, message=FALSE}
-# variance in time-invariant variables?
-vars <- c("age", "sex", "status")
+# no variance in time-invariant variables?
+l2_vars <- c("age", "sex", "status")
 
 data %>%
   group_by(id) %>%
-  summarise(across(all_of(vars), ~ n_distinct(.) == 1), .groups = "drop") %>%
-  summarise(across(all_of(vars), all))
-
-# investigate further
-data %>%
-  group_by(id) %>%
-  summarise(across(all_of(vars), n_distinct)) %>%
-  mutate(across(all_of(vars), ~ .x == 1))
+  summarise(across(all_of(l2_vars), ~ n_distinct(.) == 1), .groups = "drop") %>%
+  summarise(across(all_of(l2_vars), all))
 ```
 
 # Participants response behaviors
 
-```{r}
+```{r, fig.show="hold", out.width="50%"}
 # compute the response frequencies
 data$compl <- !is.na(data$resptime)
 
@@ -74,14 +83,14 @@ hist(aggregate(data, compl ~ id, sum)$compl, main = "Response Frequency",
      col="lightgray", xlab="Number of assessments", right=FALSE)
 
 # histogram of the compliance
-hist(aggregate(data, compl ~ id, sum)$compl / 60, main = "Response Frequency",
+hist(aggregate(data, compl ~ id, sum)$compl / 60 * 100, main = "Response Frequency",
      col="lightgray", xlab="Percentage of assessments", right=FALSE)
 
 # summary of compliance
-summary(aggregate(data, compl ~ id, sum)$compl / 60)
+summary(aggregate(data, compl ~ id, sum)$compl / 60 * 100)
 ```
 
-```{r}
+```{r, fig.show="hold", out.width="50%"}
 # compute response delays
 data$delay <- data$resptime - data$beeptime
 
@@ -90,6 +99,19 @@ barplot(table(data$delay), xlab="Delay in Minutes")
 ```
 
 # Compute and transform variables
+
+```{r, fig.show="hold", out.width="50%"}
+# check distributions and out-of-range values
+barplot(table(data$mood_relaxed), main = "Mood: Relaxed")
+barplot(table(data$mood_down), main = "Mood: Down")
+barplot(table(data$eventpl), main = "Event pleaseantness")
+barplot(table(data$age), main = "Age")
+```
+
+```{r}
+# summary of L2-variables
+head(aggregate(data, age ~ id, unique))
+```
 
 ```{r}
 # compute scales of positive and negative affect
@@ -135,7 +157,7 @@ data %>% filter(id %in% id_select) %>%
      facet_grid(id~., scales="free") 
 ```
 
-```{r, echo=FALSE}
+```{r, echo=FALSE, fig.show="hold", out.width="50%"}
 # loop for time series plots
 id_chunks <- seq(1, length(data$id), 5)
 

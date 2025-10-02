@@ -7,6 +7,11 @@ output:
 
 Preprocessing can be organized along a reproducible workflow: (1) understand the study design, (2) reliably import the raw data, (3) validate measurement windows, (4) classify missing and problematic observations, (5) compute scales and derived variables, (6) generate the analysis dataset for the target model (e.g., LMM). Each step should be documented in scripts to ensure that the analyses remain transparent and reproducible. 
 
+```{r, include=FALSE}
+install.packages("dplyr")
+install.packages("ggplot2")
+```
+
 ```{r, message=FALSE}
 library(dplyr)
 library(ggplot2)

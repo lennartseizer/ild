@@ -73,7 +73,7 @@ data %>%
 
 # Participants response behaviors
 
-```{r}
+```{r, fig.show="hold"}
 # compute the response frequencies
 data$compl <- !is.na(data$resptime)
 
@@ -103,6 +103,7 @@ barplot(table(data$delay), xlab="Delay in Minutes")
 
 # Compute and transform variables
 
+xxx
 ```{r, fig.show="hold", out.width="50%"}
 # check distributions and out-of-range values
 barplot(table(data$mood_relaxed), main = "Mood: Relaxed")
@@ -116,6 +117,7 @@ barplot(table(data$age), main = "Age")
 head(aggregate(data, age ~ id, unique))
 ```
 
+xxx
 ```{r}
 # compute scales of positive and negative affect
 data$pa <- rowMeans(data[,c("mood_cheerf", "mood_relaxed", "mood_satisfi")])
@@ -124,34 +126,59 @@ data$na <- rowMeans(data[,c("mood_irritat", "mood_anxious", "mood_down",
                             "mood_guilty", "mood_insecur", "mood_lonely")])
 ```
 
+xxx
+
 ```{r}
-# separate variables into within and between parts
+# separate variables into within and between parts (event pleasantness)
 
-# positive affect
-data$pa_b <- ave(data$pa, data$id, FUN=function(x)mean(x, na.rm = TRUE)) # person-mean (between)
-data$pa_w <- data$pa - data$pa_b # person-mean centered (within)
+# compute person-means 
+data$eventpl_b <- ave(data$eventpl, data$id, FUN=function(x)mean(x, na.rm = TRUE)) 
 
-# negative affect
-data$na_b <- ave(data$na, data$id, FUN=function(x)mean(x, na.rm = TRUE)) # person-mean (between)
-data$na_w <- data$na - data$na_b # person-mean centered (within)
+# person-mean centering
+data$eventpl_w <- data$eventpl - data$eventpl_b 
 
-tibble(data[,c("id","pa","pa_b","pa_w")])
+# compute grand-mean 
+eventpl_gm <- mean(aggregate(data, eventpl_b ~ id, unique)$eventpl_b)
+
+# person-mean centering
+data$eventpl_bc <- data$eventpl_b - eventpl_gm
+
+head(data[, c("id", "day", "beep", "eventpl","eventpl_b", "eventpl_w", "eventpl_bc")])
+```
+
+```{r}
+# plot between part of event_pl
+id_select <- unique(data$id)[1:20]
+
+data %>% filter(id %in% id_select) %>%
+  ggplot(aes(x = obs, y = eventpl_b, col = id)) +
+     geom_line() + theme_bw() + 
+     theme(legend.position = "none") 
+```
+
+```{r, warning=F}
+# plot within part of event_pl
+id_select <- unique(data$id)[1:20]
+
+data %>% filter(id %in% id_select) %>%
+  ggplot(aes(x = obs, y = eventpl_w, col = id)) +
+     geom_line() + geom_point() + facet_wrap(~id) +
+     theme_bw() + theme(legend.position = "none")
 ```
 
 # visualization
 
-```{r, message=FALSE}
-id_select <- "c100"
+```{r, warning=FALSE}
+unique(data$id)[1:20]
 
 data %>% filter(id %in% id_select) %>%
-     ggplot(aes(x = obs, y = pa)) +
-     geom_line() +
-     geom_point() +
-     facet_grid(id ~ ., scales = "free") 
+  ggplot(aes(x = obs, y = pa, col = id)) +
+     geom_line() + geom_point() + facet_wrap(~id) +
+     theme_bw() + theme(legend.position = "none")
 ```
 
-```{r, message=FALSE}
-id_select <- c("c100", "c101", "c102", "c103", "c104")
+```{r, warning=FALSE}
+id_select <- unique(data$id)[1:20]
 
 data %>% filter(id %in% id_select) %>%
      ggplot(aes(x=obs, y=mood_relaxed)) +

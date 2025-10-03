@@ -1,8 +1,5 @@
 ---
 title: "Preprocessing"
-output:
-  html_document:
-    self_contained: no
 ---
 
 ```{r, include=FALSE}

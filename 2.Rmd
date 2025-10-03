@@ -16,13 +16,14 @@ Preprocessing can be organized along a reproducible workflow: (1) understand the
   </figcaption>
 </figure>
 
+# Get data
+
 ```{r, message=FALSE}
+# set environment
 library(dplyr)
 library(ggplot2)
 library(cowplot)
 ```
-
-# Get data
 
 ```{r, message=FALSE}
 # load example data
@@ -67,7 +68,8 @@ l2_vars <- c("age", "sex", "status")
 
 data %>%
   group_by(id) %>%
-  summarise(across(all_of(l2_vars), ~ n_distinct(.) == 1), .groups = "drop") %>%
+  summarise(across(all_of(l2_vars), ~ n_distinct(.) == 1), 
+            .groups = "drop") %>%
   summarise(across(all_of(l2_vars), all))
 ```
 
@@ -79,13 +81,13 @@ data$compl <- !is.na(data$resptime)
 
 # histogram of the response frequencies
 p_comp1 <- ggplot(aggregate(data, compl ~ id, sum), aes(x = compl)) +
-  geom_bar() + theme_minimal() + xlab("Number of assessments") +
+  geom_bar() + theme_bw() + xlab("Number of assessments") +
   ggtitle("Response Frequency")
 
 # histogram of the compliance
-p_comp2 <- ggplot(aggregate(data, compl ~ id, sum), aes(x = compl / 60 * 100)) +
-  geom_bar() + theme_minimal() + xlab("Number of assessments") +
-  ggtitle("Response Frequency")
+p_comp2 <- ggplot(aggregate(data, compl ~ id, sum), 
+                  aes(x = compl / 60 * 100)) + geom_bar() + theme_bw() + 
+                  xlab("Percentage of assessments") 
 
 plot_grid(p_comp1, p_comp2)
 
@@ -93,23 +95,32 @@ plot_grid(p_comp1, p_comp2)
 summary(aggregate(data, compl ~ id, sum)$compl / 60 * 100)
 ```
 
-```{r, fig.show="hold", out.width="50%"}
+```{r, fig.dim = c(5, 4)}
 # compute response delays
 data$delay <- data$resptime - data$beeptime
 
-# barplot of the delay values
-barplot(table(data$delay), xlab="Delay in Minutes")
+# barplot of the delay 
+ggplot(data, aes(x = delay)) + geom_bar() + theme_minimal() 
 ```
 
 # Compute and transform variables
 
 xxx
-```{r, fig.show="hold", out.width="50%"}
+```{r, warning=F, fig.dim = c(10, 8)}
 # check distributions and out-of-range values
-barplot(table(data$mood_relaxed), main = "Mood: Relaxed")
-barplot(table(data$mood_down), main = "Mood: Down")
-barplot(table(data$eventpl), main = "Event pleaseantness")
-barplot(table(data$age), main = "Age")
+hist1 <- ggplot(data, aes(x = mood_relaxed)) + geom_bar() + theme_bw() +
+  ggtitle("Mood: Relaxed")
+
+hist2 <- ggplot(data, aes(x = mood_down)) + geom_bar() + theme_bw() +
+  ggtitle("Mood: Down")
+
+hist3 <- ggplot(data, aes(x = eventpl)) + geom_bar() + theme_bw() +
+  ggtitle("Event pleaseantness")
+
+hist4 <- ggplot(data, aes(x = age)) + geom_bar() + theme_bw() +
+  ggtitle("Age")
+
+plot_grid(hist1, hist2, hist3, hist4)
 ```
 
 ```{r}
@@ -117,7 +128,6 @@ barplot(table(data$age), main = "Age")
 head(aggregate(data, age ~ id, unique))
 ```
 
-xxx
 ```{r}
 # compute scales of positive and negative affect
 data$pa <- rowMeans(data[,c("mood_cheerf", "mood_relaxed", "mood_satisfi")])
@@ -125,8 +135,6 @@ data$pa <- rowMeans(data[,c("mood_cheerf", "mood_relaxed", "mood_satisfi")])
 data$na <- rowMeans(data[,c("mood_irritat", "mood_anxious", "mood_down", 
                             "mood_guilty", "mood_insecur", "mood_lonely")])
 ```
-
-xxx
 
 ```{r}
 # separate variables into within and between parts (event pleasantness)
@@ -152,6 +160,7 @@ id_select <- unique(data$id)[1:20]
 
 data %>% filter(id %in% id_select) %>%
   ggplot(aes(x = obs, y = eventpl_b, col = id)) +
+     geom_hline(yintercept = eventpl_gm, lty = "dashed", lwd = 1) +
      geom_line() + theme_bw() + 
      theme(legend.position = "none") 
 ```
@@ -165,6 +174,19 @@ data %>% filter(id %in% id_select) %>%
      geom_line() + geom_point() + facet_wrap(~id) +
      theme_bw() + theme(legend.position = "none")
 ```
+
+```{r}
+# create lagged variables
+data <- data %>%
+  arrange(id, obs) %>%                
+  group_by(id) %>%                     
+  mutate(eventpl_w_l1 = lag(eventpl_w, n = 1)) %>% # lag by 1 obs
+  mutate(eventpl_w_l1 = if_else(beep == 1, NA, eventpl_w_l1)) %>% # reset each day
+  ungroup()
+
+head(data[, c("id", "day", "beep", "eventpl_w", "eventpl_w_l1")], n = 15)
+```
+
 
 # visualization
 

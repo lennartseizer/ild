@@ -73,7 +73,7 @@ data %>%
 
 # Participants response behaviors
 
-```{r, fig.show="hold"}
+```{r}
 # compute the response frequencies
 data$compl <- !is.na(data$resptime)
 

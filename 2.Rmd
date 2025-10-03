@@ -173,19 +173,6 @@ data %>% filter(id %in% data$id[i:i+4]) %>%
 }
 ```
 
-```{r}
-# plot within and between parts
-data %>% filter(id %in% id_select) %>%
-     ggplot(aes(x = obs, y = pa_b)) +
-     geom_line() +
-     geom_point() 
-
-data %>% filter(id %in% id_select) %>%
-     ggplot(aes(x = obs, y = pa_w)) +
-     geom_line() +
-     geom_point() 
-```
-
 # References & Further reading
 
 Matejka, J., & Fitzmaurice, G. (2017). Same stats, different graphs: generating datasets with varied appearance and identical statistics through simulated annealing. In Proceedings of the 2017 CHI conference on human factors in computing systems (pp. 1290-1294).

@@ -27,9 +27,17 @@ Preprocessing can be organized along a reproducible workflow: (1) understand the
 library(dplyr)
 library(ggplot2)
 library(cowplot)
+
+library(dplyr)
 library(tidyr)
+library(ggplot2)
 library(forcats)
 library(ggdist)
+
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(forcats)
 library(scales)
 ```
 
@@ -252,7 +260,7 @@ person_means <- data %>%
 # plot
 ggplot(person_means, aes(x = iMean, y = item, col = item)) +
   geom_jitter(height =.2, alpha = 0.6) +
-  geom_boxplot( width = 0.12, outlier.shape = NA,color = "grey20") +
+  geom_boxplot(width = 0.12, outlier.shape = NA,color = "grey20") +
   scale_x_continuous(breaks = 1:7) +
   labs(title = "Boxplots for mood items", y = NULL,
        x = "Individual mean") +
@@ -311,7 +319,8 @@ ggplot(sumdat, aes(x = beep, y = mean, color = item)) +
     labs(title = "Item means across beeps (time of day)",
          x = "Beep", y = "Mean response", color = "Item") +
     theme_bw(base_size = 12) +
-    theme(panel.grid.minor = element_blank())
+    theme(plot.title = element_text(face = "bold"),
+        legend.position = "none")
 ```
 
 **Plot mood item means over study days**
@@ -339,7 +348,52 @@ ggplot(sumdat, aes(x = day, y = mean, color = item)) +
   labs(title = "Item means across study days",
        x = "Day", y = "Mean response", color = "Item") +
   theme_bw(base_size = 12) +
-  theme(panel.grid.minor = element_blank())
+  theme(plot.title = element_text(face = "bold"),
+        legend.position = "none")
+```
+
+**Plot individual ACF of PA and NA**
+```{r, fig.dim = c(5, 4), warning=F}
+# detrend individual PA and NA series
+long <- data %>%
+  select(id, day, obs, pa, na) %>%
+  pivot_longer(pa:na, names_to="var", values_to="value") %>%
+  drop_na(id, day, obs, value) %>%
+  arrange(id, var, obs) %>%
+  group_by(id, var) %>%
+  mutate(resid = resid(lm(value ~ obs))) %>%
+  ungroup()
+
+# compute ACF (and exclude overnight pairs)
+acf_tbl <- long %>%
+  group_by(id, var) %>%
+  group_modify(~{
+    df <- .x
+    tibble(
+      lag = 1:9,
+      acf = sapply(1:9, function(L){
+        mask <- dplyr::lag(df$day, L) == df$day   
+        x <- df$resid[mask]
+        y <- dplyr::lag(df$resid, L)[mask]
+        if (sum(!is.na(x) & !is.na(y)) >= 3) cor(x, y, use="complete.obs") else NA_real_
+      })
+    )
+  }) %>%
+  ungroup() %>%
+  tidyr::drop_na(acf)
+
+# plot
+ggplot(acf_tbl, aes(lag, acf, col = var)) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  geom_point(alpha = 0.5, position = position_jitter(width = 0.05, height = 0)) +
+  scale_x_continuous(breaks = 1:9) +
+  coord_cartesian(ylim = c(-1, 1)) +
+  labs(title = "Autocorrelations across beeps (overnight excluded, detrended)",
+       x = "Lag (beeps)", y = "ACF") +
+  facet_wrap(~ var, nrow = 1) +
+  theme_bw(base_size = 12) + 
+  theme(plot.title = element_text(face = "bold"),
+        legend.position = "none")
 ```
 
 **Plot participants based on average PA level**
@@ -454,7 +508,3 @@ Matejka, J., & Fitzmaurice, G. (2017). Same stats, different graphs: generating 
 
 Siepe, B. S., Rieble, C. L., Tutunji, R., Rimpler, A., März, J., Proppert, R. K., & Fried, E. I. (2025). Understanding Ecological-Momentary-Assessment Data: A Tutorial on Exploring Item Performance in Ecological-Momentary-Assessment Data. Advances in Methods and Practices in Psychological Science, 8(1), 25152459241286877.
 
-
-# References & Further reading
-
-Matejka, J., & Fitzmaurice, G. (2017). Same stats, different graphs: generating datasets with varied appearance and identical statistics through simulated annealing. In Proceedings of the 2017 CHI conference on human factors in computing systems (pp. 1290-1294).

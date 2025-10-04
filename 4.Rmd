@@ -1,0 +1,326 @@
+---
+title: 'Fitting a Mixed-effects model'
+output:
+  html_document:
+    self_contained: no
+---
+
+```{r}
+#install.packages("lme4")
+#install.packages("nlme")
+#install.packages("EMAtools")
+#install.packages("ggplot2")
+#install.packages("cowplot")
+#install.packages("dplyr")
+#install.packages("treemapify")
+```
+
+
+```{r setup, include=FALSE}
+library(dplyr)
+
+# load example data
+data <- read.delim("https://www.kuleuven.be/samenwerking/real/real-book/viechtbauer2022_data_esmda_example")
+
+# compute scales of positive and negative affect
+data$pa <- rowMeans(data[,c("mood_cheerf", "mood_relaxed", "mood_satisfi")])
+
+data$na <- rowMeans(data[,c("mood_irritat", "mood_anxious", "mood_down", 
+                            "mood_guilty", "mood_insecur", "mood_lonely")])
+
+# positive affect
+data$pa_b <- ave(data$pa, data$id, FUN=function(x)mean(x, na.rm = TRUE)) # person-mean (between)
+data$pa_w <- data$pa - data$pa_b # person-mean centered (within)
+
+# negative affect
+data$na_b <- ave(data$na, data$id, FUN=function(x)mean(x, na.rm = TRUE)) # person-mean (between)
+data$na_w <- data$na - data$na_b # person-mean centered (within)
+```
+
+| Feature / Task                   | **lme4 (lmer)**                          | **nlme (lme)**                                 |
+|----------------------------------|------------------------------------------|------------------------------------------------|
+| Main function                    | `lmer()`                                 | `lme()`                                        |
+| Syntax for random intercepts     | `lmer(y ~ 1 + (1|id), data = df)`        | `lme(y ~ 1, random = ~1|id, data = df)`        |
+| Random slopes                    | `lmer(y ~ x + (x|id), data = df)`        | `lme(y ~ x, random = ~x|id, data = df)`        |
+| Multiple grouping factors        | Yes (nested/crossed)                     | Limited, mostly nested                         |
+| Estimation method                | REML / ML (fast, sparse matrices)        | REML / ML (older implementation)               |
+| Handles heteroscedasticity       | Not directly                             | Yes, via `weights = varIdent(...)`             |
+| Correlation structures           | Not directly                             | Yes, via `corAR1`, `corCompSymm`, etc.         |
+| Extract fixed effects            | `fixef(model)`                           | `fixef(model)`                                 |
+| Extract random effects (BLUPs)   | `ranef(model)`                           | `ranef(model)`                                 |
+| Fitted values                    | `fitted(model)`                          | `fitted(model)`                                |
+| P-values for fixed effects       | Not provided by default (use `lmerTest`) | Provided directly in summary output            |
+| Popular extensions               | `lmerTest`, `glmer`, `glmmTMB`           | `gnls`, `gls`                                  |
+| Speed / scalability              | Very fast, good for large data           | Slower, better for smaller/moderate data       |
+
+
+# Base model
+
+```{r, message=FALSE}
+# set environment
+library(nlme)
+library(lme4)
+library(EMAtools)
+library(ggplot2)
+library(cowplot)
+library(treemapify) 
+```
+
+```{r}
+# fit base model
+m1 <- lme(pa ~ 1, 
+          random = ~1|id,
+          data = data, 
+          na.action = na.exclude)
+
+summary(m1)
+```
+
+```{r}
+# fixed effects
+fixef(m1)
+
+# random effects
+head(ranef(m1))
+```
+
+```{r, fig.dim = c(10, 4), warning=F}
+# plot individual intercepts and residuals
+hist1 <- ggplot(data.frame(value = coef(m1)[[1]]), aes(x = value)) +
+  geom_histogram(aes(y = after_stat(density)), bins = 30, color = "white") +
+  geom_density(linewidth = 0.8, color = "blue") +
+  scale_x_continuous(breaks = 1:7) +
+  labs(x = "Average Positive Affect", y = "Density") +
+  theme_bw()
+
+hist2 <- ggplot(data.frame(value = resid(m1)), aes(x = value)) +
+  geom_histogram(aes(y = after_stat(density)), bins = 30, color = "white") +
+  geom_density(linewidth = 0.8, color = "blue") +
+  scale_x_continuous(breaks = 1:7) +
+  labs(x = "Residual", y = "Density") +
+  theme_bw()
+  
+plot_grid(hist1, hist2)
+```
+
+**Shrinkage**: compare pooled estimates with non-pooled means
+```{r, fig.dim = c(10, 4), warning=F}
+# compute individual means
+indiv_means <- data %>%
+  group_by(id) %>%
+  summarise(indiv_mean = mean(pa, na.rm = TRUE)) %>%
+  ungroup()
+
+# plot pooled vs non-pooled means
+hist1 <- ggplot(data.frame(value = coef(m1)[[1]]), aes(x = value)) +
+  geom_histogram(aes(y = after_stat(density)), bins = 30, color = "white") +
+  geom_density(linewidth = 0.8, color = "blue") +
+  scale_x_continuous(breaks = 1:7) +
+  labs(title = "Average Positive Affect", x = "BLUPs") +
+  theme_bw()
+
+hist2 <- ggplot(data.frame(value = indiv_means$indiv_mean), aes(x = value)) +
+  geom_histogram(aes(y = after_stat(density)), bins = 30, color = "white") +
+  geom_density(linewidth = 0.8, color = "blue") +
+  scale_x_continuous(breaks = 1:7) +
+  labs(title = "Average Positive Affect", x = "Observed means") +
+  theme_bw()
+  
+plot_grid(hist1, hist2)
+
+# pooled vs non-pooled means
+head(data.frame(BLUP = coef(m1)[[1]], 
+                Obs_Means = indiv_means$indiv_mean))
+```
+
+**ICC**: Intraclass Correlation Coefficient
+```{r}
+int_var <- getVarCov(m1)[1,1] # random intercept variance
+res_var <- sigma(m1)^2 # residual variance
+
+int_var / (int_var + res_var)
+```
+
+# Adding time as a predictor
+```{r, fig.dim = c(10, 8), warning=F}
+# plot time variables
+d <- data %>% filter(id == "c100") %>% mutate(idx = row_number())
+
+t1 <- ggplot(d, aes(idx, obs)) + geom_line() + geom_point() + 
+  labs(x="Index", y="obs") + theme_bw()
+t2 <- ggplot(d, aes(idx, day)) + geom_line() + geom_point() + 
+  labs(x="Index", y="day") + theme_bw()
+t3 <- ggplot(d, aes(idx, beep)) + geom_line() + geom_point() + 
+  labs(x="Index", y="beep")     + theme_bw()
+t4 <- ggplot(d, aes(idx, beeptime)) + geom_line() + geom_point() + 
+  labs(x="Index", y="beeptime") + theme_bw()
+
+plot_grid(t1, t2, t3, t4)
+```
+
+**Variance decomposition based on time variables**
+```{r, fig.dim = c(5, 4), warning=F, message=F}
+# intercept-only model with time-variance components 
+m2_lme <- lme(pa ~ 1, 
+              random = ~1|id/day/beeptime,
+              data = data, 
+              na.action = na.omit)
+
+m2_lmer <- lmer(pa ~ 1 + (1|id) + (1|day) + (1 | beeptime) + (1|id:day) +
+                  (1|id:beeptime) + (1|day:beeptime),
+                data = data)
+
+# model summaries
+summary(m2_lme)
+summary(m2_lmer)
+
+# extract variance components
+vc <- as.data.frame(VarCorr(m2_lmer)) %>%
+    transmute(Term = dplyr::recode(grp, id = "Person", `day` = "Day", `beep` = "Beep",
+                                   `id:day` = "Person:Day", `id:beep` = "Person:Beep",
+                                   `day:beep` = "Day:Beep", `Residual` = "Residual"), 
+              Var = vcov) %>%
+    group_by(Term) %>% summarise(Var = sum(Var), .groups = "drop") %>%
+    mutate(Prop = Var / sum(Var),
+           label = paste0(Term, "\n", scales::percent(Prop, accuracy = 0.1)))
+
+# plot 
+ggplot(vc, aes(area = Prop, fill = Term, label = label)) +
+    geom_treemap() + geom_treemap_text(colour = "white", place = "centre") +
+    labs(title = "Variance decomposition for PA") + theme_bw(base_size = 12) +
+    theme(plot.title = element_text(face = "bold"), legend.position = "none")
+```
+
+# Adding a between predictor
+```{r}
+m2 <- lme(pa ~ sex, 
+          random = ~1|id,
+          data = data, 
+          na.action = na.omit)
+
+summary(m2)
+```
+
+# Adding a within predictor
+```{r}
+m3 <- lme(pa ~ eventpl + sex, 
+          random = ~eventpl|id,
+          data = data, 
+          na.action = na.omit)
+
+summary(m3)
+```
+
+```{r}
+# fixed effects
+fixef(m3)
+
+# random effects
+head(ranef(m3))
+```
+
+```{r}
+# plot estimates
+hist(coef(m3)[[1]], breaks = 30, freq=FALSE, main="", 
+     xlab="Intercepts")
+hist(coef(m3)[[2]], breaks = 30, freq=FALSE, main="", 
+     xlab="Slopes")
+hist(resid(m3), breaks = 30, freq=FALSE, main="", 
+     xlab="Residuals")
+plot(coef(m3)[[1]], coef(m3)[[2]], xlab="Intercept", ylab="Slope")
+abline(v=fixef(m3)[1], lty="dotted")
+abline(h=fixef(m3)[2], lty="dotted")
+```
+
+# Adding covariates
+
+```{r}
+m5 <- lme(pa ~ eventpl + use_alcohol, 
+          random = ~eventpl|id,
+          data = data, 
+          na.action = na.omit)
+
+summary(m5)
+```
+
+Card: Fixed vs random effects
+There is not yet consensus about how to deal with singularity, or more generally to choose which random-effects specification (from a range of choices of varying complexity) to use. Some proposals include:
+
+avoid fitting overly complex models in the first place, i.e. design experiments/restrict models a priori such that the variance-covariance matrices can be estimated precisely enough to avoid singularity (Matuschek et al 2017)
+
+use some form of model selection to choose a model that balances predictive accuracy and overfitting/type I error (Bates et al 2015, Matuschek et al 2017)
+
+“keep it maximal”, i.e. fit the most complex model consistent with the experimental design, removing only terms required to allow a non-singular fit (Barr et al. 2013), or removing further terms based on p-values or AIC
+
+```{r}
+m6 <- lme(pa ~ use_alcohol, 
+          random = ~1|id,
+          data = data, 
+          na.action = na.omit)
+
+m7 <- lme(pa ~ use_alcohol, 
+          random = ~use_alcohol|id,
+          data = data, 
+          na.action = na.omit)
+
+anova(m6, m7)
+```
+
+# Level-2 moderation
+```{r}
+m4 <- lme(pa ~ eventpl * status, 
+          random = ~eventpl|id,
+          data = data, 
+          na.action = na.omit)
+
+summary(m4)
+```
+
+# Level-1 moderation
+
+# Within-subject mediation
+
+Terminology 1-1-1
+
+# Lagged analyses
+
+
+# Check assumptions
+```{r}
+library(performance)
+
+check_model(m2)
+```
+
+
+# Standardized outputs
+
+**Cohen's d**
+```{r}
+# model summary
+summary(m3)
+
+# cohens d for eventpl: (2*t)/sqrt(df)
+(2 * 23.81798) / sqrt(13710)
+
+# helper function from EMAtools
+lme.dscore(m3, type = "nlme")
+```
+
+**Confidence intervals**
+```{r}
+# confidence intervals
+intervals(m3, level = .95)
+```
+
+**Explained variance**
+```{r}
+
+```
+
+# Example write-up
+```{r}
+
+```
+
+

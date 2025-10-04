@@ -8,7 +8,7 @@ output:
 ```{r}
 install.packages("lme4")
 install.packages("nlme")
-install.packages("EMAtools")
+#install.packages("EMAtools")
 install.packages("ggplot2")
 install.packages("cowplot")
 install.packages("dplyr")
@@ -59,7 +59,7 @@ data$na_w <- data$na - data$na_b # person-mean centered (within)
 # set environment
 library(nlme)
 library(lme4)
-library(EMAtools)
+#library(EMAtools)
 library(ggplot2)
 library(cowplot)
 library(treemapify) 
@@ -303,7 +303,7 @@ summary(m3)
 (2 * 23.81798) / sqrt(13710)
 
 # helper function from EMAtools
-lme.dscore(m3, type = "nlme")
+#lme.dscore(m3, type = "nlme")
 ```
 
 **Confidence intervals**

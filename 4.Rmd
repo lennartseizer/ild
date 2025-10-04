@@ -6,15 +6,14 @@ output:
 ---
 
 ```{r}
-#install.packages("lme4")
-#install.packages("nlme")
-#install.packages("EMAtools")
-#install.packages("ggplot2")
-#install.packages("cowplot")
-#install.packages("dplyr")
-#install.packages("treemapify")
+install.packages("lme4")
+install.packages("nlme")
+install.packages("EMAtools")
+install.packages("ggplot2")
+install.packages("cowplot")
+install.packages("dplyr")
+install.packages("treemapify")
 ```
-
 
 ```{r setup, include=FALSE}
 library(dplyr)

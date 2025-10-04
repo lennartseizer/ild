@@ -12,7 +12,7 @@ install.packages("nlme")
 install.packages("ggplot2")
 install.packages("cowplot")
 install.packages("dplyr")
-install.packages("treemapify")
+#install.packages("treemapify")
 ```
 
 ```{r setup, include=FALSE}
@@ -184,10 +184,10 @@ vc <- as.data.frame(VarCorr(m2_lmer)) %>%
            label = paste0(Term, "\n", scales::percent(Prop, accuracy = 0.1)))
 
 # plot 
-ggplot(vc, aes(area = Prop, fill = Term, label = label)) +
-    geom_treemap() + geom_treemap_text(colour = "white", place = "centre") +
-    labs(title = "Variance decomposition for PA") + theme_bw(base_size = 12) +
-    theme(plot.title = element_text(face = "bold"), legend.position = "none")
+#ggplot(vc, aes(area = Prop, fill = Term, label = label)) +
+#    geom_treemap() + geom_treemap_text(colour = "white", place = "centre") +
+#    labs(title = "Variance decomposition for PA") + theme_bw(base_size = 12) +
+#    theme(plot.title = element_text(face = "bold"), legend.position = "none")
 ```
 
 # Adding a between predictor

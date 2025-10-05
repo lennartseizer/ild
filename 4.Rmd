@@ -27,7 +27,7 @@ data$na <- rowMeans(data[,c("mood_irritat", "mood_anxious", "mood_down",
 
 data$eventpl_b <- ave(data$eventpl, data$id, FUN=function(x)mean(x, na.rm = TRUE)) 
 data$eventpl_w <- data$eventpl - data$eventpl_b 
-eventpl_gm <- mean(aggregate(data, eventpl_b ~ id, unique)$eventpl_b)
+eventpl_gm <- mean(data$eventpl_b)#mean(aggregate(data, eventpl_b ~ id, unique)$eventpl_b)
 data$eventpl_bc <- data$eventpl_b - eventpl_gm
 
 # create lagged variables
@@ -54,7 +54,6 @@ data <- data %>%
 | Extract random effects (BLUPs)   | `ranef(model)`                           | `ranef(model)`                                 |
 | Fitted values                    | `fitted(model)`                          | `fitted(model)`                                |
 | P-values for fixed effects       | Not provided by default (use `lmerTest`) | Provided directly in summary output            |
-| Popular extensions               | `lmerTest`, `glmer`, `glmmTMB`           | `gnls`, `gls`                                  |
 | Speed / scalability              | Very fast, good for large data           | Slower, better for smaller/moderate data       |
 
 
@@ -67,6 +66,8 @@ library(lme4)
 library(ggplot2)
 library(cowplot)
 library(scales)
+library(r2mlm)
+library(tidyr)
 ```
 
 ```{r}
@@ -156,7 +157,7 @@ t2 <- ggplot(d, aes(idx, day)) + geom_line() + geom_point() +
 t3 <- ggplot(d, aes(idx, beep)) + geom_line() + geom_point() + 
   labs(x="Index", y="beep")     + theme_bw()
 t4 <- ggplot(d, aes(idx, beeptime)) + geom_line() + geom_point() + 
-  labs(x="Index", y="beeptime") + theme_bw()
+  labs(x="Index", y="resptime") + theme_bw()
 
 plot_grid(t1, t2, t3, t4)
 ```
@@ -261,6 +262,28 @@ m4_c <- lme(pa ~ eventpl_w + eventpl_bc + age_c,
           na.action = na.omit)
 
 summary(m4_c)
+```
+
+**Explained variance**
+```{r, results="hide", message=FALSE, warning=FALSE}
+# decomposition
+r2mlm_manual(
+  data = data %>% select(all_of(all.vars(formula(m4)))) %>% drop_na(), 
+  within_covs  = c("eventpl_w"),
+  between_covs = c("eventpl_bc","age"),
+  random_covs  = c("eventpl_w"),
+  gamma_w      = unname(fixef(m4)["eventpl_w"]),
+  gamma_b      = unname(fixef(m4)[c("(Intercept)","eventpl_bc","age")]),
+  Tau          = as.matrix(getVarCov(m4)),
+  sigma2       = sigma(m4)^2
+)
+```
+
+```{r}
+# Nakagawa's R2
+install.packages("performance")
+library(performance)
+performance::r2(m4)
 ```
 
 **L1 covariate**
@@ -371,8 +394,6 @@ summary(m9)
 ```
 
 # VAR model
-
-
 
 **Prepare variables**
 ```{r}
@@ -572,11 +593,8 @@ intervals(m3, level = .95)
 
 **Explained variance**
 ```{r}
-m4_lmer <- lmer(pa ~ eventpl_w + eventpl_bc + age + (1 + eventpl_w | id), 
-                data = data, REML = TRUE)
-install.packages("r2mlm")
-library(r2mlm)
-r2mlm(m4_lmer)
+
+
 ```
 
 **Standardized coefficients**
@@ -586,26 +604,34 @@ standardize_parameters(m3)
 ```
 
 **Cohen's d**
+
+Framework: https://doi.org/10.1037/a0014699, https://doi.org/10.1037/a0030048  
+Detailed tutorial: https://solomonkurz.netlify.app/blog/2021-04-22-effect-sizes-for-experimental-trials-analyzed-with-multilevel-growth-models-two-of-two/
+
+d_GMA = b_int * time / SD_pooled
+
+SD_pooled = sqrt((var_c_pre + var_p_pre)/2)
+
 ```{r}
-# model summary
-summary(m3)
+# fit model
+m10 <- lme(pa ~ day * status, 
+           random = ~day|id,
+           data = data[!data$status == "depressed",], 
+           na.action = na.omit)
 
-# cohens d for eventpl: (2*t)/sqrt(df)
-(2 * 23.29885) / sqrt(13710)
+summary(m10)
 
+# psychotic sd_d1
+sd_d1_p <- sd(data$pa[data$status=="psychotic" & data$day==1], na.rm = T)
 
-m3 <- lme(pa ~ day*status, 
-          random = ~day|id,
-          data = data, 
-          na.action = na.omit)
+# control sd_d1
+sd_d1_c <- sd(data$pa[data$status=="control" & data$day==1], na.rm = T)
 
-summary(m3)
+# pooled sd
+pooled_sd <- sqrt((sd_d1_p^2 + sd_d1_c^2) / 2)
 
-sd_dep_d1_p <- sd(data$pa[data$status=="psychotic" & data$day == 1], na.rm = T)
-sd_dep_d1_c <- sd(data$pa[data$status=="control" & data$day == 1], na.rm = T)
-sqrt((sd_dep_d1_p^2 + sd_dep_d1_c^2) / 2)
-
--0.028122*5/1.264741
+# d_gma
+as.numeric(fixef(m10)["day:statuspsychotic"]) *5 / pooled_sd
 ```
 
 # Example write-up
@@ -615,6 +641,3 @@ sqrt((sd_dep_d1_p^2 + sd_dep_d1_c^2) / 2)
 1. (a) Estimate a model that predicts negative affect based on whether participants are alone or with others. (b) Test whether the previous effect is moderated by how pleasant the company of others is experienced.
 
 2. (a) Estimate the time trend of negative affect over the study period, and (b) whether this time trend differs between mental health status groups.
-
-
-

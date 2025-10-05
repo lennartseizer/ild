@@ -350,6 +350,7 @@ Terminology:
 # Model diagnostics
 
 ```{r}
+# fit model
 m3 <- lme(pa ~ eventpl_w, 
           random = ~eventpl_w|id,
           data = data, 
@@ -357,19 +358,50 @@ m3 <- lme(pa ~ eventpl_w,
 ```
 
 **L1 residuals**
-```{r}
-# extract fitted values and residuals
-res <- resid(m3, type = "normalized")
+```{r, message=F}
+# prepare residuals/predictions
+res  <- residuals(m3, type = "normalized")
 pred <- fitted(m3)
+df   <- data.frame(res = as.numeric(res), pred = as.numeric(pred))
 
-plot(density(res), main = "Distribution of Level-1 residuals")
-qqnorm(res, main = "Q-Q Plot of Level-1 residuals")
-qqline(res)
-plot(pred, res, main='Predicted vs. Actual Values')
-acf(res, main="ACF of Level-1 residuals")
+# density of residuals
+p_dens <- ggplot(df, aes(x = res)) + geom_density() +
+  labs(title = "Distribution of Level-1 residuals", x = "Residual", y = "Density") +
+  theme_bw()
+
+# q-q plot
+p_qq <- ggplot(df, aes(sample = res)) + stat_qq() + stat_qq_line() +
+  labs(title = "Q-Q Plot of Level-1 residuals", x = "Theoretical quantiles", y = "Sample quantiles") +
+  theme_bw()
+
+# predicted vs residuals
+p_scatter <- ggplot(df, aes(x = pred, y = res)) + geom_point(alpha = 0.4) +
+  geom_smooth(method = "loess", se = FALSE, linewidth = 0.6) +
+  labs(title = "Predicted vs Residuals", x = "Predicted", y = "Residuals") +
+  theme_bw()
+
+# ACF of residuals 
+acf_obj <- acf(df$res, plot = FALSE, na.action = na.pass)
+n_used <- acf_obj$n.used
+ci <- qnorm(0.975) / sqrt(n_used)
+
+acf_df <- data.frame(
+  lag = as.numeric(acf_obj$lag) * n_used,
+  acf = as.numeric(acf_obj$acf)
+) %>% filter(lag > 0)
+
+p_acf <- ggplot(acf_df, aes(x = lag, y = acf)) +
+  geom_hline(yintercept = 0, linetype = "solid") +
+  geom_hline(yintercept = c(-ci, ci), linetype = "dashed") +
+  geom_segment(aes(xend = lag, y = 0, yend = acf)) +
+  labs(title = "ACF of Level-1 residuals", x = "Lag", y = "ACF") +
+  theme_bw()
+
+plot_grid(p_dens, p_qq, p_scatter, p_acf)
 ```
 
-```{r}
+```{r, message=F}
+# fit model with AR errors
 m3_ar <- lme(pa ~ eventpl_w, 
              random = ~eventpl_w|id,
              data = data, 
@@ -378,35 +410,79 @@ m3_ar <- lme(pa ~ eventpl_w,
 ```
 
 **L1 residuals**
-```{r}
-# extract fitted values and residuals
-res <- resid(m3_ar, type = "normalized")
+```{r, message = F}
+# prepare residuals/predictions
+res  <- residuals(m3_ar, type = "normalized")
 pred <- fitted(m3_ar)
+df   <- data.frame(res = as.numeric(res), pred = as.numeric(pred))
 
-plot(density(res), main = "Distribution of Level-1 residuals")
-qqnorm(res, main = "Q-Q Plot of Level-1 residuals")
-qqline(res)
-plot(pred, res, main='Predicted vs. Actual Values')
-acf(res, main="ACF of Level-1 residuals")
+# density of residuals
+p_dens <- ggplot(df, aes(x = res)) + geom_density() +
+  labs(title = "Distribution of Level-1 residuals", x = "Residual", 
+       y = "Density") + theme_bw()
+
+# q-q plot
+p_qq <- ggplot(df, aes(sample = res)) + stat_qq() + stat_qq_line() +
+  labs(title = "Q-Q Plot of Level-1 residuals", x = "Theoretical quantiles", 
+       y = "Sample quantiles") + theme_bw()
+
+# predicted vs residuals
+p_scatter <- ggplot(df, aes(x = pred, y = res)) + geom_point(alpha = 0.4) +
+  geom_smooth(method = "loess", se = FALSE, linewidth = 0.6) +
+  labs(title = "Predicted vs Residuals", x = "Predicted", y = "Residuals") +
+  theme_bw()
+
+# ACF of residuals 
+acf_obj <- acf(df$res, plot = FALSE, na.action = na.pass)
+n_used <- acf_obj$n.used
+ci <- qnorm(0.975) / sqrt(n_used)
+
+acf_df <- data.frame(
+  lag = as.numeric(acf_obj$lag) * n_used,
+  acf = as.numeric(acf_obj$acf)
+) %>% filter(lag > 0)
+
+p_acf <- ggplot(acf_df, aes(x = lag, y = acf)) +
+  geom_hline(yintercept = 0, linetype = "solid") +
+  geom_hline(yintercept = c(-ci, ci), linetype = "dashed") +
+  geom_segment(aes(xend = lag, y = 0, yend = acf)) +
+  labs(title = "ACF of Level-1 residuals", x = "Lag", y = "ACF") +
+  theme_bw()
+
+# plot
+plot_grid(p_dens, p_qq, p_scatter, p_acf)
 ```
 
 **L2 residuals**
 ```{r}
-# intercept
-res_int <- (ranef(m3_ar)["(Intercept)"])[,1]
+# extract random effects 
+re_int   <- as.numeric(ranef(m3_ar)[,"(Intercept)"])  # level-2 intercepts
+re_slope <- as.numeric(ranef(m3   )[,"eventpl_w"])    # level-2 slopes 
 
-plot(density(res_int), main = "Distribution of Level-2 Intercept residuals")
-qqnorm(res_int, main = "Q-Q Plot of Level-2 Intercept residuals")
-qqline(res_int)
+df_int   <- data.frame(effect = re_int)
+df_slope <- data.frame(effect = re_slope)
 
-# slope
-res_slope <- (ranef(m3)["eventpl_w"])[,1]
+# intercept residuals
+p_int_dens <- ggplot(df_int, aes(x = effect)) + geom_density() +
+  labs(title = "Distribution of intercept residuals", x = "Intercept BLUP", 
+       y = "Density") + theme_bw()
 
-plot(density(res_slope), main = "Distribution of Level-2 Negative emotion residuals")
-qqnorm(res_slope, main = "Q-Q Plot of Level-2 Negative emotion residuals")
-qqline(res_slope)
+p_int_qq <- ggplot(df_int, aes(sample = effect)) + stat_qq() + stat_qq_line() +
+  labs(title = "Q–Q Plot of intercept residuals", x = "Theoretical quantiles", 
+       y = "Sample quantiles") + theme_bw()
+
+# slope residuals
+p_slope_dens <- ggplot(df_slope, aes(x = effect)) + geom_density() +
+  labs(title = "Distribution of slope residuals", x = "eventpl_w slope BLUP", 
+       y = "Density") + theme_bw()
+
+p_slope_qq <- ggplot(df_slope, aes(sample = effect)) + stat_qq() + stat_qq_line() +
+  labs(title = "Q–Q Plot of slope residuals", x = "Theoretical quantiles", 
+       y = "Sample quantiles") + theme_bw()
+
+# plot
+plot_grid(p_int_dens, p_int_qq, p_slope_dens, p_slope_qq)
 ```
-
 
 # Standardized / additional outputs
 
@@ -426,10 +502,7 @@ intervals(m3, level = .95)
 ```
 
 **Explained variance**
-```{r}
 
-```
 
 # Example write-up
-
 

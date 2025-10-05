@@ -9,6 +9,7 @@ install.packages("scales")
 install.packages("ggplot2")
 install.packages("cowplot")
 install.packages("dplyr")
+install.packages("parameters")
 ```
 
 ```{r setup, include=FALSE}

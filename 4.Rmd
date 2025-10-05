@@ -572,7 +572,11 @@ intervals(m3, level = .95)
 
 **Explained variance**
 ```{r}
-
+m4_lmer <- lmer(pa ~ eventpl_w + eventpl_bc + age + (1 + eventpl_w | id), 
+                data = data, REML = TRUE)
+install.packages("r2mlm")
+library(r2mlm)
+r2mlm(m4_lmer)
 ```
 
 **Standardized coefficients**

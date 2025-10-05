@@ -23,13 +23,21 @@ data$pa <- rowMeans(data[,c("mood_cheerf", "mood_relaxed", "mood_satisfi")])
 data$na <- rowMeans(data[,c("mood_irritat", "mood_anxious", "mood_down", 
                             "mood_guilty", "mood_insecur", "mood_lonely")])
 
-# positive affect
-data$pa_b <- ave(data$pa, data$id, FUN=function(x)mean(x, na.rm = TRUE)) # person-mean (between)
-data$pa_w <- data$pa - data$pa_b # person-mean centered (within)
 
-# negative affect
-data$eventpl_b <- ave(data$eventpl, data$id, FUN=function(x)mean(x, na.rm = TRUE)) # person-mean (between)
-data$eventpl_w <- data$eventpl - data$eventpl_b # person-mean centered (within)
+data$eventpl_b <- ave(data$eventpl, data$id, FUN=function(x)mean(x, na.rm = TRUE)) 
+data$eventpl_w <- data$eventpl - data$eventpl_b 
+eventpl_gm <- mean(aggregate(data, eventpl_b ~ id, unique)$eventpl_b)
+data$eventpl_bc <- data$eventpl_b - eventpl_gm
+
+# create lagged variables
+data <- data %>%
+  arrange(id, obs) %>%                
+  group_by(id) %>%     
+  # lag by 1 obs
+  mutate(eventpl_w_l1 = lag(eventpl_w, n = 1)) %>% 
+  # reset each day
+  mutate(eventpl_w_l1 = if_else(beep == 1, NA, eventpl_w_l1)) %>%
+  ungroup()
 ```
 
 | Feature / Task                   | **lme4 (lmer)**                          | **nlme (lme)**                                 |
@@ -65,7 +73,7 @@ library(scales)
 m1 <- lme(pa ~ 1, 
           random = ~1|id,
           data = data, 
-          na.action = na.exclude)
+          na.action = na.omit)
 
 summary(m1)
 ```
@@ -156,12 +164,12 @@ plot_grid(t1, t2, t3, t4)
 ```{r, fig.dim = c(5, 4), warning=F, message=F}
 # intercept-only model with time-variance components 
 m2_lme <- lme(pa ~ 1, 
-              random = ~1|id/day/beeptime,
+              random = ~1|id/day/beep,
               data = data, 
               na.action = na.omit)
 
-m2_lmer <- lmer(pa ~ 1 + (1|id) + (1|day) + (1 | beeptime) + (1|id:day) +
-                  (1|id:beeptime) + (1|day:beeptime),
+m2_lmer <- lmer(pa ~ 1 + (1|id) + (1|day) + (1 | beep) + (1|id:day) +
+                  (1|id:beep) + (1|day:beep),
                 data = data)
 
 # model summaries
@@ -225,8 +233,8 @@ abline(h=fixef(m3)[2], lty="dotted")
 **L2 covariate**
 ```{r}
 # fit model with L2 covariate
-m4 <- lme(pa ~ eventpl_w + age, 
-          random = ~eventpl|id,
+m4 <- lme(pa ~ eventpl_w + eventpl_bc + age, 
+          random = ~eventpl_w|id,
           data = data, 
           na.action = na.omit)
 
@@ -246,7 +254,7 @@ head(ranef(m4))
 data$age_c <- data$age - mean(aggregate(data, age ~ id, unique)$age)
 
 # fit model with L2 covariate
-m4_c <- lme(pa ~ eventpl_w + age_c, 
+m4_c <- lme(pa ~ eventpl_w + eventpl_bc + age_c, 
           random = ~eventpl_w|id,
           data = data, 
           na.action = na.omit)
@@ -279,13 +287,13 @@ There is not yet consensus about how to deal with singularity, or more generally
 # covariates: use_alcohol, use_coffee
 
 # base model
-m6 <- lme(pa ~ eventpl_b + use_alcohol + use_coffee, 
+m6 <- lme(pa ~ eventpl_bc + use_alcohol + use_coffee, 
           random = ~1|id,
           data = data, 
           na.action = na.omit)
 
 # random effect for use_alcohol
-m7 <- lme(pa ~ eventpl_b + use_alcohol + use_coffee, 
+m7 <- lme(pa ~ eventpl_bc + use_alcohol + use_coffee, 
           random = ~use_alcohol|id,
           data = data, 
           na.action = na.omit)
@@ -293,7 +301,7 @@ m7 <- lme(pa ~ eventpl_b + use_alcohol + use_coffee,
 anova(m6, m7)
 
 # random effect for use_coffee
-m8 <- lme(pa ~ eventpl_b + use_alcohol + use_coffee, 
+m8 <- lme(pa ~ eventpl_bc + use_alcohol + use_coffee, 
           random = ~use_coffee|id,
           data = data, 
           na.action = na.omit)
@@ -301,7 +309,7 @@ m8 <- lme(pa ~ eventpl_b + use_alcohol + use_coffee,
 anova(m6, m8)
 
 # final model
-m8 <- lme(pa ~ eventpl_w + eventpl_b + use_alcohol + use_coffee, 
+m8 <- lme(pa ~ eventpl_w + eventpl_bc + use_alcohol + use_coffee, 
           random = ~eventpl_w + use_alcohol|id,
           data = data, 
           na.action = na.omit)
@@ -313,7 +321,7 @@ summary(m8)
 
 **L1 moderation**
 ```{r}
-m9 <- lme(pa ~ eventpl * location, 
+m9 <- lme(pa ~ eventpl * soc_alone, 
           random = ~eventpl|id,
           data = data, 
           na.action = na.omit)
@@ -341,13 +349,85 @@ Terminology:
 
 ```
 
-# Lagged analyses
+# Lagged analysis
 
+```{r}
+# create lagged pa 
+data <- data %>%
+  arrange(id, obs) %>%                
+  group_by(id) %>%     
+  mutate(pa_l1 = lag(pa, n = 1)) %>% 
+  mutate(pa_l1 = if_else(beep == 1, NA, pa_l1)) %>%
+  ungroup()
+
+# fit model with lagged eventpl
+m9 <- lme(pa ~ eventpl_w_l1 + pa_l1, 
+          random = ~eventpl_w_l1 + pa_l1|id,
+          data = data, 
+          na.action = na.omit)
+
+summary(m9)
+```
+
+# VAR model
+
+
+
+**Prepare variables**
+```{r}
+# pa
+data$pa_b <- ave(data$pa, data$id, FUN=function(x)mean(x, na.rm = TRUE)) 
+data$pa_w <- data$pa - data$pa_b 
+data <- data %>%
+  arrange(id, obs) %>%                
+  group_by(id) %>%     
+  mutate(pa_w_l1 = lag(pa_w, n = 1)) %>% 
+  mutate(pa_w_l1 = if_else(beep == 1, NA, pa_w_l1)) %>%
+  ungroup()
+
+# na
+data$na_b <- ave(data$na, data$id, FUN=function(x)mean(x, na.rm = TRUE)) 
+data$na_w <- data$na - data$na_b 
+data <- data %>%
+  arrange(id, obs) %>%                
+  group_by(id) %>%     
+  mutate(na_w_l1 = lag(na_w, n = 1)) %>% 
+  mutate(na_w_l1 = if_else(beep == 1, NA, na_w_l1)) %>%
+  ungroup()
+```
+
+**VAR part 1**
+```{r}
+# b11, b21, sigma11
+var1 <- lme(pa ~ pa_w_l1 + na_w_l1,
+            random = ~pa_w_l1 + na_w_l1|id,
+            data = data,
+            na.action = na.exclude)
+
+summary(var1)
+```
+
+**VAR part 2**
+```{r}
+# b21, b22, sigma22
+var2 <- lme(na ~ pa_w_l1 + na_w_l1,
+            random = ~pa_w_l1 + na_w_l1|id,
+            data = data,
+            na.action = na.exclude)
+
+summary(var2)
+```
+
+**VAR part 3**
+```{r}
+# sigma 12
+cov(residuals(var1), residuals(var2), use = "complete.obs")
+```
 
 # Model diagnostics
 
+**Fit model**
 ```{r}
-# fit model
 m3 <- lme(pa ~ eventpl_w, 
           random = ~eventpl_w|id,
           data = data, 
@@ -392,13 +472,13 @@ p_acf <- ggplot(acf_df, aes(x = lag, y = acf)) +
   geom_hline(yintercept = c(-ci, ci), linetype = "dashed") +
   geom_segment(aes(xend = lag, y = 0, yend = acf)) +
   labs(title = "ACF of Level-1 residuals", x = "Lag", y = "ACF") +
-  theme_bw()
+  theme_bw() + ylim(c(-.1,.25))
 
 plot_grid(p_dens, p_qq, p_scatter, p_acf)
 ```
 
+**Fit model with AR errors**
 ```{r, message=F}
-# fit model with AR errors
 m3_ar <- lme(pa ~ eventpl_w, 
              random = ~eventpl_w|id,
              data = data, 
@@ -444,7 +524,7 @@ p_acf <- ggplot(acf_df, aes(x = lag, y = acf)) +
   geom_hline(yintercept = c(-ci, ci), linetype = "dashed") +
   geom_segment(aes(xend = lag, y = 0, yend = acf)) +
   labs(title = "ACF of Level-1 residuals", x = "Lag", y = "ACF") +
-  theme_bw()
+  theme_bw() + ylim(c(-.1,.25))
 
 # plot
 plot_grid(p_dens, p_qq, p_scatter, p_acf)
@@ -453,10 +533,10 @@ plot_grid(p_dens, p_qq, p_scatter, p_acf)
 **L2 residuals**
 ```{r}
 # extract random effects 
-re_int   <- as.numeric(ranef(m3_ar)[,"(Intercept)"])  # level-2 intercepts
-re_slope <- as.numeric(ranef(m3   )[,"eventpl_w"])    # level-2 slopes 
+re_int <- as.numeric(ranef(m3_ar)[,"(Intercept)"]) # level-2 intercepts
+re_slope <- as.numeric(ranef(m3_ar)[,"eventpl_w"]) # level-2 slopes 
 
-df_int   <- data.frame(effect = re_int)
+df_int <- data.frame(effect = re_int)
 df_slope <- data.frame(effect = re_slope)
 
 # intercept residuals
@@ -483,15 +563,6 @@ plot_grid(p_int_dens, p_int_qq, p_slope_dens, p_slope_qq)
 
 # Standardized / additional outputs
 
-**Cohen's d**
-```{r}
-# model summary
-summary(m3)
-
-# cohens d for eventpl: (2*t)/sqrt(df)
-(2 * 23.81798) / sqrt(13710)
-```
-
 **Confidence intervals**
 ```{r}
 # confidence intervals
@@ -499,7 +570,46 @@ intervals(m3, level = .95)
 ```
 
 **Explained variance**
+```{r}
 
+```
+
+**Standardized coefficients**
+```{r}
+library(parameters)
+standardize_parameters(m3)
+```
+
+**Cohen's d**
+```{r}
+# model summary
+summary(m3)
+
+# cohens d for eventpl: (2*t)/sqrt(df)
+(2 * 23.29885) / sqrt(13710)
+
+
+m3 <- lme(pa ~ day*status, 
+          random = ~day|id,
+          data = data, 
+          na.action = na.omit)
+
+summary(m3)
+
+sd_dep_d1_p <- sd(data$pa[data$status=="psychotic" & data$day == 1], na.rm = T)
+sd_dep_d1_c <- sd(data$pa[data$status=="control" & data$day == 1], na.rm = T)
+sqrt((sd_dep_d1_p^2 + sd_dep_d1_c^2) / 2)
+
+-0.028122*5/1.264741
+```
 
 # Example write-up
+
+
+# Exercises
+1. (a) Estimate a model that predicts negative affect based on whether participants are alone or with others. (b) Test whether the previous effect is moderated by how pleasant the company of others is experienced.
+
+2. (a) Estimate the time trend of negative affect over the study period, and (b) whether this time trend differs between mental health status groups.
+
+
 

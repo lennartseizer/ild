@@ -8,7 +8,7 @@ output:
 ```{r}
 install.packages("lme4")
 install.packages("nlme")
-#install.packages("scales")
+install.packages("scales")
 install.packages("ggplot2")
 install.packages("cowplot")
 install.packages("dplyr")

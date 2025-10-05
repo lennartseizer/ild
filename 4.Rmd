@@ -1,5 +1,5 @@
 ---
-title: 'Fitting a Mixed-effects model'
+title: 'Fitting mixed-effects models'
 output:
   html_document:
     self_contained: no
@@ -8,11 +8,10 @@ output:
 ```{r}
 install.packages("lme4")
 install.packages("nlme")
-#install.packages("EMAtools")
+#install.packages("scales")
 install.packages("ggplot2")
 install.packages("cowplot")
 install.packages("dplyr")
-#install.packages("treemapify")
 ```
 
 ```{r setup, include=FALSE}
@@ -32,8 +31,8 @@ data$pa_b <- ave(data$pa, data$id, FUN=function(x)mean(x, na.rm = TRUE)) # perso
 data$pa_w <- data$pa - data$pa_b # person-mean centered (within)
 
 # negative affect
-data$na_b <- ave(data$na, data$id, FUN=function(x)mean(x, na.rm = TRUE)) # person-mean (between)
-data$na_w <- data$na - data$na_b # person-mean centered (within)
+data$eventpl_b <- ave(data$eventpl, data$id, FUN=function(x)mean(x, na.rm = TRUE)) # person-mean (between)
+data$eventpl_w <- data$eventpl - data$eventpl_b # person-mean centered (within)
 ```
 
 | Feature / Task                   | **lme4 (lmer)**                          | **nlme (lme)**                                 |
@@ -53,16 +52,15 @@ data$na_w <- data$na - data$na_b # person-mean centered (within)
 | Speed / scalability              | Very fast, good for large data           | Slower, better for smaller/moderate data       |
 
 
-# Base model
+# Null model
 
 ```{r, message=FALSE}
 # set environment
 library(nlme)
 library(lme4)
-#library(EMAtools)
 library(ggplot2)
 library(cowplot)
-library(treemapify) 
+library(scales)
 ```
 
 ```{r}
@@ -175,35 +173,29 @@ summary(m2_lmer)
 
 # extract variance components
 vc <- as.data.frame(VarCorr(m2_lmer)) %>%
-    transmute(Term = dplyr::recode(grp, id = "Person", `day` = "Day", `beep` = "Beep",
-                                   `id:day` = "Person:Day", `id:beep` = "Person:Beep",
-                                   `day:beep` = "Day:Beep", `Residual` = "Residual"), 
-              Var = vcov) %>%
-    group_by(Term) %>% summarise(Var = sum(Var), .groups = "drop") %>%
-    mutate(Prop = Var / sum(Var),
-           label = paste0(Term, "\n", scales::percent(Prop, accuracy = 0.1)))
+  group_by(grp) %>%
+  summarise(vcov = sum(vcov), .groups = "drop") %>%
+  mutate(Prop = vcov / sum(vcov)) %>%
+  arrange(Prop)
 
-# plot 
-#ggplot(vc, aes(area = Prop, fill = Term, label = label)) +
-#    geom_treemap() + geom_treemap_text(colour = "white", place = "centre") +
-#    labs(title = "Variance decomposition for PA") + theme_bw(base_size = 12) +
-#    theme(plot.title = element_text(face = "bold"), legend.position = "none")
+# clearer plot: sorted horizontal bars with percent labels
+ggplot(vc, aes(x = Prop, y = reorder(grp, Prop), fill = grp)) +
+  geom_col(width = 0.7, color = "white", show.legend = FALSE) +
+  geom_text(aes(label = percent(Prop, accuracy = 0.1)),
+            hjust = -0.1, size = 3.2) +
+  scale_x_continuous(labels = percent_format(accuracy = 1),
+                     expand = expansion(mult = c(0, 0.1))) +
+  labs(title = "Variance decomposition for PA",
+       x = "Proportion of variance", y = NULL) +
+  theme_bw(base_size = 12) 
 ```
 
-# Adding a between predictor
-```{r}
-m2 <- lme(pa ~ sex, 
-          random = ~1|id,
-          data = data, 
-          na.action = na.omit)
+# Adding a L1 predictor
 
-summary(m2)
-```
-
-# Adding a within predictor
 ```{r}
-m3 <- lme(pa ~ eventpl + sex, 
-          random = ~eventpl|id,
+# fit model with predictor
+m3 <- lme(pa ~ eventpl_w, 
+          random = ~eventpl_w|id,
           data = data, 
           na.action = na.omit)
 
@@ -233,9 +225,43 @@ abline(h=fixef(m3)[2], lty="dotted")
 
 # Adding covariates
 
+**L2 covariate**
 ```{r}
-m5 <- lme(pa ~ eventpl + use_alcohol, 
+# fit model with L2 covariate
+m4 <- lme(pa ~ eventpl_w + age, 
           random = ~eventpl|id,
+          data = data, 
+          na.action = na.omit)
+
+summary(m4)
+```
+
+```{r}
+# fixed effects
+fixef(m4)
+
+# random effects
+head(ranef(m4))
+```
+
+```{r}
+# grand-mean center age
+data$age_c <- data$age - mean(aggregate(data, age ~ id, unique)$age)
+
+# fit model with L2 covariate
+m4_c <- lme(pa ~ eventpl_w + age_c, 
+          random = ~eventpl_w|id,
+          data = data, 
+          na.action = na.omit)
+
+summary(m4_c)
+```
+
+**L1 covariate**
+```{r}
+# fit model with L1 covariate
+m5 <- lme(pa ~ eventpl + use_alcohol, 
+          random = ~eventpl + use_alcohol|id,
           data = data, 
           na.action = na.omit)
 
@@ -245,54 +271,144 @@ summary(m5)
 Card: Fixed vs random effects
 There is not yet consensus about how to deal with singularity, or more generally to choose which random-effects specification (from a range of choices of varying complexity) to use. Some proposals include:
 
-avoid fitting overly complex models in the first place, i.e. design experiments/restrict models a priori such that the variance-covariance matrices can be estimated precisely enough to avoid singularity (Matuschek et al 2017)
+ - avoid fitting overly complex models in the first place, i.e. design experiments/restrict models a priori such that the variance-covariance matrices can be estimated precisely enough to avoid singularity (Matuschek et al 2017)
 
-use some form of model selection to choose a model that balances predictive accuracy and overfitting/type I error (Bates et al 2015, Matuschek et al 2017)
+ - use some form of model selection to choose a model that balances predictive accuracy and overfitting/type I error (Bates et al 2015, Matuschek et al 2017)
 
-“keep it maximal”, i.e. fit the most complex model consistent with the experimental design, removing only terms required to allow a non-singular fit (Barr et al. 2013), or removing further terms based on p-values or AIC
+ - “keep it maximal”, i.e. fit the most complex model consistent with the experimental design, removing only terms required to allow a non-singular fit (Barr et al. 2013), or removing further terms based on p-values or AIC
 
 ```{r}
-m6 <- lme(pa ~ use_alcohol, 
+# example RQ: PA <- eventpl within-participants
+# covariates: use_alcohol, use_coffee
+
+# base model
+m6 <- lme(pa ~ eventpl_b + use_alcohol + use_coffee, 
           random = ~1|id,
           data = data, 
           na.action = na.omit)
 
-m7 <- lme(pa ~ use_alcohol, 
+# random effect for use_alcohol
+m7 <- lme(pa ~ eventpl_b + use_alcohol + use_coffee, 
           random = ~use_alcohol|id,
           data = data, 
           na.action = na.omit)
 
 anova(m6, m7)
+
+# random effect for use_coffee
+m8 <- lme(pa ~ eventpl_b + use_alcohol + use_coffee, 
+          random = ~use_coffee|id,
+          data = data, 
+          na.action = na.omit)
+
+anova(m6, m8)
+
+# final model
+m8 <- lme(pa ~ eventpl_w + eventpl_b + use_alcohol + use_coffee, 
+          random = ~eventpl_w + use_alcohol|id,
+          data = data, 
+          na.action = na.omit)
+
+summary(m8)
 ```
 
-# Level-2 moderation
+# Moderation analysis
+
+**L1 moderation**
 ```{r}
-m4 <- lme(pa ~ eventpl * status, 
+m9 <- lme(pa ~ eventpl * location, 
           random = ~eventpl|id,
           data = data, 
           na.action = na.omit)
 
-summary(m4)
+summary(m9)
 ```
 
-# Level-1 moderation
+**L2 moderation**
+```{r}
+m10 <- lme(pa ~ eventpl * status, 
+          random = ~eventpl|id,
+          data = data,
+          na.action = na.omit)
 
-# Within-subject mediation
+summary(m10)
+```
 
-Terminology 1-1-1
+# Mediation analysis
+
+Terminology:  
+`1-1-1` eventpl -> use_alcohol -> PA
+`1-2-1` eventpl -> XX -> PA
+
+```{r}
+
+```
 
 # Lagged analyses
 
 
-# Check assumptions
-```{r}
-library(performance)
+# Model diagnostics
 
-check_model(m2)
+```{r}
+m3 <- lme(pa ~ eventpl_w, 
+          random = ~eventpl_w|id,
+          data = data, 
+          na.action = na.omit)
+```
+
+**L1 residuals**
+```{r}
+# extract fitted values and residuals
+res <- resid(m3, type = "normalized")
+pred <- fitted(m3)
+
+plot(density(res), main = "Distribution of Level-1 residuals")
+qqnorm(res, main = "Q-Q Plot of Level-1 residuals")
+qqline(res)
+plot(pred, res, main='Predicted vs. Actual Values')
+acf(res, main="ACF of Level-1 residuals")
+```
+
+```{r}
+m3_ar <- lme(pa ~ eventpl_w, 
+             random = ~eventpl_w|id,
+             data = data, 
+             na.action = na.omit,
+             correlation = corAR1(form = ~beep|id/day))
+```
+
+**L1 residuals**
+```{r}
+# extract fitted values and residuals
+res <- resid(m3_ar, type = "normalized")
+pred <- fitted(m3_ar)
+
+plot(density(res), main = "Distribution of Level-1 residuals")
+qqnorm(res, main = "Q-Q Plot of Level-1 residuals")
+qqline(res)
+plot(pred, res, main='Predicted vs. Actual Values')
+acf(res, main="ACF of Level-1 residuals")
+```
+
+**L2 residuals**
+```{r}
+# intercept
+res_int <- (ranef(m3_ar)["(Intercept)"])[,1]
+
+plot(density(res_int), main = "Distribution of Level-2 Intercept residuals")
+qqnorm(res_int, main = "Q-Q Plot of Level-2 Intercept residuals")
+qqline(res_int)
+
+# slope
+res_slope <- (ranef(m3)["eventpl_w"])[,1]
+
+plot(density(res_slope), main = "Distribution of Level-2 Negative emotion residuals")
+qqnorm(res_slope, main = "Q-Q Plot of Level-2 Negative emotion residuals")
+qqline(res_slope)
 ```
 
 
-# Standardized outputs
+# Standardized / additional outputs
 
 **Cohen's d**
 ```{r}
@@ -301,9 +417,6 @@ summary(m3)
 
 # cohens d for eventpl: (2*t)/sqrt(df)
 (2 * 23.81798) / sqrt(13710)
-
-# helper function from EMAtools
-#lme.dscore(m3, type = "nlme")
 ```
 
 **Confidence intervals**
@@ -318,8 +431,5 @@ intervals(m3, level = .95)
 ```
 
 # Example write-up
-```{r}
-
-```
 
 

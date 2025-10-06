@@ -656,7 +656,7 @@ plot_grid(p_int_dens, p_int_qq, p_slope_dens, p_slope_qq)
 install.packages("HLMdiag")
 library(HLMdiag)
 m3_ar_infl <- hlm_influence(m3_ar, level = "id")
-dotplot_diag(m3_ar_infl$cooksd, name = "cooks.distance", cutoff = 4/328)
+#dotplot_diag(m3_ar_infl$cooksd, name = "cooks.distance", cutoff = 4/328)
 ```
 
 # Standardized / additional outputs

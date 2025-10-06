@@ -2,7 +2,7 @@
 title: 'Fitting mixed-effects models'
 ---
 
-```{r}
+```{r,include=F}
 install.packages("lme4")
 install.packages("nlme")
 install.packages("scales")

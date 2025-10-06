@@ -155,7 +155,7 @@ int_var / (int_var + res_var)
 ```
 
 # Adding time as a predictor
-```{r, fig.dim = c(10, 8), warning=F}
+```{r, fig.dim = c(7, 5), warning=F}
 # plot time variables
 d <- data %>% filter(id == "c100") %>% mutate(idx = row_number())
 
@@ -172,7 +172,7 @@ cowplot::plot_grid(t1, t2, t3, t4)
 ```
 
 **Variance decomposition based on time variables**
-```{r, fig.dim = c(10, 8), warning=F, message=F}
+```{r, fig.dim = c(7, 5), warning=F, message=F}
 # intercept-only model with time-variance components 
 m2_lme <- lme(pa ~ 1, 
               random = ~1|id/day/beep,
@@ -263,7 +263,7 @@ cowplot::plot_grid(p_int, p_slope, p_res, p_scatter)
 ```
 
 **Spaghetti plot**
-```{r, fig.dim = c(10, 8), warning=F, message=F}
+```{r, fig.dim = c(7, 5), warning=F, message=F}
 data_plot <- data %>% mutate(pred = predict(m3)) 
 
 ggplot(data_plot, aes(x = eventpl_w, y = pa, group = id)) +
@@ -435,7 +435,7 @@ summary(m9)
 ```
 
 **Spaghetti plot**
-```{r, fig.dim = c(10, 8), warning=F, message=F}
+```{r, fig.dim = c(7, 5), warning=F, message=F}
 # subject-specific predictions
 data_plot <- data %>% mutate(pred_id = as.numeric(predict(m9, level = 1)))
 
@@ -461,7 +461,7 @@ ggplot() +
 ```
 
 **Random effect distributions**
-```{r, fig.dim = c(10, 8), warning=F, message=F}
+```{r, fig.dim = c(7, 5), warning=F, message=F}
 # subject-specific predictions
 re <- as.data.frame(ranef(m9))
 re$id <- rownames(re)
@@ -522,7 +522,7 @@ summary(m11)
 ```
 
 **Fixed-effects interaction plot**
-```{r, fig.dim = c(10,8), warning=F, message=F}
+```{r, fig.dim = c(7,5), warning=F, message=F}
 # fixed effects & VCOV
 fe <- fixef(m10) 
 VC <- vcov(m10)

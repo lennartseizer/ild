@@ -439,7 +439,28 @@ Terminology:
 `1-2-1` eventpl -> XX -> PA
 
 ```{r}
+install.packages("reshape2")
+library(reshape2)
 
+data_med <- data[, c("id", "obs", "soc_pleasant", "eventpl_w", "pa")]
+data_med$m <- data_med$eventpl_w
+
+data_med <- melt(
+  data_med,
+  id.vars   = c("id", "obs", "soc_pleasant", "eventpl_w"),
+  measure.vars = c("m","pa"),              # <- explicitly stack m and pa
+  variable.name = "dv",
+  value.name    = "z"
+)
+
+# adding dummy variables
+data_med$dv <- factor(data_med$dv, levels = c("m","pa"))  # mediator first
+data_med$dm <- as.integer(data_med$dv == "m")
+data_med$dy <- as.integer(data_med$dv == "pa")
+data_med$obs <- scale(data_med$obs, center = TRUE, scale = FALSE)
+
+# order by id and time
+data_med <- data_med[order(data_med$id,data_med$obs),]
 ```
 
 # Lagged analysis
@@ -655,7 +676,7 @@ plot_grid(p_int_dens, p_int_qq, p_slope_dens, p_slope_qq)
 ```{r}
 install.packages("HLMdiag")
 library(HLMdiag)
-m3_ar_infl <- hlm_influence(m3_ar, level = "id")
+#m3_ar_infl <- hlm_influence(m3_ar, level = "id")
 #dotplot_diag(m3_ar_infl$cooksd, name = "cooks.distance", cutoff = 4/328)
 ```
 

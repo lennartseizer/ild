@@ -193,7 +193,8 @@ F-statistic: 281.6 on 1 and 98 DF,  p-value: &lt; 2.2e-16
 > fit <- nlme::lme(
              fixed   = y ~ w + b,
              random  = ~ 1 | id,
-             data    = data)
+             data    = data,
+             na.omit = na.exclude)
 > summary(fit)
   
 Linear mixed-effects model fit by REML
@@ -247,7 +248,8 @@ b              0.46     0.08   160    5.75   <0.001         # <-- γ01
 > fit <- nlme::lme(
              fixed   = y ~ w + b,
              random  = ~ -1 + w | id,
-             data    = data)
+             data    = data,
+             na.omit = na.exclude))
 > summary(fit)
   
 Linear mixed-effects model fit by REML
@@ -302,7 +304,8 @@ b              0.46     0.08   160    5.75   <0.001         # <-- γ01
 > fit <- nlme::lme(
              fixed   = y ~ w + b,
              random  = ~ w | id,
-             data    = data)
+             data    = data,
+             na.omit = na.exclude))
 > summary(fit)
   
 Linear mixed-effects model fit by REML
@@ -372,7 +375,8 @@ b              0.46     0.08   160    5.75   <0.001              # <-- γ01
              fixed   = y ~ w + b,
              random  = ~ w | id,
              correlation = corAR1(form = ~ time | id),
-             data    = data)
+             data    = data,
+             na.omit = na.exclude))
 > summary(fit)
   
 Linear mixed-effects model fit by REML
@@ -443,7 +447,8 @@ b              0.46     0.08   160    5.75   <0.001              # <-- γ01
              fixed   = y ~ w * b,
              random  = ~ w | id,
              correlation = corAR1(form = ~ time | id),
-             data    = data)
+             data    = data,
+             na.omit = na.exclude))
 > summary(fit)
   
 Linear mixed-effects model fit by REML
@@ -525,7 +530,8 @@ w:b            0.23     0.07   398    2.94   0.0035              # <-- γ11
              fixed       = y ~ w * b,
              random      = ~ w | group/id,
              correlation = corAR1(form = ~ time | group/id),
-             data        = data)
+             data        = data,
+             na.omit     = na.exclude))
 > summary(fit)
   
 Linear mixed-effects model fit by REML

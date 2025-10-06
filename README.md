@@ -7,6 +7,4 @@ Nested/time-series and multilevel structure
 Within-person variation and dynamics are central
 Requires modeling techniques that account for autocorrelation, intraindividual variability, and between-person heterogeneity
 
-´´´{r}
-library(ggplot2)
-´´´
+´library(ggplot2)´

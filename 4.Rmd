@@ -839,7 +839,7 @@ intervals(m3, level = .95)
 standardize_parameters(m3)
 ```
 
-**Cohen's d**
+**Cohen's d**  
 Framework:  
 https://doi.org/10.1037/a0014699, https://doi.org/10.1037/a0030048  
 Detailed tutorial:   

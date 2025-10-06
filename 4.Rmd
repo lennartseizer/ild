@@ -12,6 +12,7 @@ install.packages("dplyr")
 install.packages("r2mlm")
 install.packages("parameters")
 install.packages("performance")
+install.packages("reshape2")
 ```
 
 ```{r setup, include=FALSE}

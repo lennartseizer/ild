@@ -3,6 +3,9 @@ layout: default
 ---
 
 <div class="page">
-  <h1 class="page-title">{{ page.title }}</h1>
+  {% assign content_has_h1 = content contains '<h1' %}
+  {% unless content_has_h1 %}
+    <h1 class="page-title">{{ page.title }}</h1>
+  {% endunless %}
   {{ content }}
 </div>

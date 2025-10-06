@@ -9,7 +9,7 @@ output:
 install.packages("simr")
 ```
 
-There are several approaches to conduct power analyses for LMMs in `R`, e.g.:  
+There are several approaches to conduct power analyses for LMMs in R, e.g.:  
 - **simr**: Simulation-based function to estimate power of LMMs.  
 - **mlpwr**: ML algorithm to find the optimal sample size and number of time points.  
 - **PowerAnalysisLM**: A Shiny app for (longitudinal) LLMs that account for temporal dependencies in multi-level data.

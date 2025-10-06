@@ -16,7 +16,7 @@ Preprocessing can be organized along a reproducible workflow: (1) understand the
 
 <figure>
     <img src="https://www.researchgate.net/profile/Sheen-Levine/publication/325941519/figure/fig2/AS:824194581422080@1573514709439/The-Datasaurus-Dozen-Matejka-Fitzmaurice-2017-an-extension-of-Anscombes-quartet.ppm">
-    <figcaption>The Datasaurus Dozen: All of them have identical descriptive statistics (Matejka & Fitzmaurice, 2017).
+    <figcaption style="font-size:0.85em; color:#666; margin-top:6px;">The Datasaurus Dozen: All of them have identical descriptive statistics.
   </figcaption>
 </figure>
 
@@ -27,19 +27,15 @@ Preprocessing can be organized along a reproducible workflow: (1) understand the
 library(dplyr)
 library(ggplot2)
 library(cowplot)
-
-library(dplyr)
 library(tidyr)
-library(ggplot2)
 library(forcats)
 library(ggdist)
-
-library(dplyr)
-library(tidyr)
-library(ggplot2)
-library(forcats)
 library(scales)
 ```
+
+<figure>
+    <img src="https://carpentry.library.ucsb.edu/2023-01-23-ucsb-r/fig/14-tidyr-fig3.png">
+</figure>
 
 ```{r, message=FALSE}
 # load example data
@@ -55,10 +51,6 @@ each day (1 to 10) and `beeptime` (in minutes after midnight) on each day, the o
 health `status` (control, depressed, psychotic)  
 
 **Time-varying response variables**: 3 items to assess positive affect and 6 items to assess negative affect (1 to 7 Likert scale), the pleasantness of events that had occurred since the previous beep `eventpl` (−3 to +3 bipolar scale), whether the person was alone at the time of the beep `soc_alone` (1 = alone, 0 = not alone) and when the person was not alone) a rating how pleasant the company is `soc_pleasant` (1 to 7 Likert scale), and whether they had consumed coffee / alcohol since the previous beep (1 = yes, 0 = no)
-
-<figure>
-    <img src="https://carpentry.library.ucsb.edu/2023-01-23-ucsb-r/fig/14-tidyr-fig3.png">
-</figure>
 
 # Design and sampling scheme
 
@@ -91,6 +83,7 @@ data %>%
 
 # Participants response behaviors
 
+**Compliance**
 ```{r, fig.dim = c(10, 4)}
 # compute the response frequencies
 data$compl <- !is.na(data$resptime)
@@ -100,9 +93,8 @@ p_comp1 <- ggplot(aggregate(data, compl ~ id, sum), aes(x = compl)) +
   geom_bar() + 
   labs(title = "Response Frequency", 
        x = "Number of assessments") +
-  theme_bw(base_size = 12) +
-  theme(plot.title = element_text(face = "bold"),
-        legend.position = "none")
+  theme_bw() + theme(plot.title = element_text(face = "bold"),
+                     legend.position = "none")
 
 # histogram of the compliance
 p_comp2 <- ggplot(aggregate(data, compl ~ id, sum), 
@@ -110,9 +102,8 @@ p_comp2 <- ggplot(aggregate(data, compl ~ id, sum),
   geom_bar() + 
   labs(title = "Response Frequency", 
        x = "Percentage of assessments") +
-  theme_bw(base_size = 12) +
-  theme(plot.title = element_text(face = "bold"),
-        legend.position = "none")
+  theme_bw() + theme(plot.title = element_text(face = "bold"),
+                     legend.position = "none")
 
 plot_grid(p_comp1, p_comp2)
 
@@ -120,6 +111,7 @@ plot_grid(p_comp1, p_comp2)
 summary(aggregate(data, compl ~ id, sum)$compl / 60 * 100)
 ```
 
+**Responsive delay**
 ```{r, fig.dim = c(5, 4), out.width="50%", warning=F}
 # compute response delays
 data$delay <- data$resptime - data$beeptime
@@ -127,9 +119,8 @@ data$delay <- data$resptime - data$beeptime
 # barplot of the delay 
 ggplot(data, aes(x = delay)) + geom_bar() +
   labs(title = "Delay of responses to beeps") +
-  theme_bw(base_size = 12) +
-  theme(plot.title = element_text(face = "bold"),
-        legend.position = "none")
+  theme_bw() + theme(plot.title = element_text(face = "bold"),
+                     legend.position = "none")
 ```
 
 # Compute and transform variables
@@ -137,16 +128,21 @@ ggplot(data, aes(x = delay)) + geom_bar() +
 ```{r, warning=F, fig.dim = c(10, 8)}
 # check distributions and out-of-range values
 hist1 <- ggplot(data, aes(x = mood_relaxed)) + geom_bar() + 
-            theme_bw() + ggtitle("Mood: Relaxed") 
+  labs(title = "Mood: Relaxed") + theme_bw() +
+  theme(plot.title = element_text(face = "bold"))
 
 hist2 <- ggplot(data, aes(x = mood_down)) + geom_bar() + 
-            theme_bw() + ggtitle("Mood: Down")
+  labs(title = "Mood: Down") + theme_bw() +
+  theme(plot.title = element_text(face = "bold"))
+
 
 hist3 <- ggplot(data, aes(x = eventpl)) + geom_bar() + 
-            theme_bw() + ggtitle("Event pleaseantness")
+  labs(title = "Event pleaseantness") + theme_bw() +
+  theme(plot.title = element_text(face = "bold"))
 
 hist4 <- ggplot(data, aes(x = age)) + geom_bar() + 
-            theme_bw() + ggtitle("Age")
+  labs(title = "Age") + theme_bw() +
+  theme(plot.title = element_text(face = "bold"))
 
 plot_grid(hist1, hist2, hist3, hist4)
 ```
@@ -156,6 +152,7 @@ plot_grid(hist1, hist2, hist3, hist4)
 head(aggregate(data, age ~ id, unique))
 ```
 
+**Compute variable aggregates**
 ```{r}
 # compute scales of positive and negative affect
 data$pa <- rowMeans(data[,c("mood_cheerf", "mood_relaxed", 
@@ -166,9 +163,9 @@ data$na <- rowMeans(data[,c("mood_irritat", "mood_anxious",
                             "mood_insecur", "mood_lonely")])
 ```
 
+**Separate variables into within and between parts**
 ```{r}
-# separate variables into within and between parts 
-# (event pleasantness)
+# event pleasantness
 
 # compute person-means 
 data$eventpl_b <- ave(data$eventpl, data$id, 
@@ -196,9 +193,8 @@ data %>% filter(id %in% id_select) %>%
      geom_hline(yintercept = eventpl_gm, lty = "dashed", lwd = 1) +
      geom_line() + 
      labs(title = "Between-part of eventpl") +
-     theme_bw(base_size = 12) +
-     theme(plot.title = element_text(face = "bold"),
-           legend.position = "none")
+     theme_bw() + theme(plot.title = element_text(face = "bold"),
+                        legend.position = "none")
 ```
 
 ```{r, fig.dim = c(10, 8), warning=F}
@@ -209,9 +205,8 @@ data %>% filter(id %in% id_select) %>%
   ggplot(aes(x = obs, y = eventpl_w, col = id)) +
      geom_line() + geom_point(size = 1) + facet_wrap(~id) +
      labs(title = "Within-part of eventpl") +
-     theme_bw(base_size = 12) +
-     theme(plot.title = element_text(face = "bold"),
-           legend.position = "none")
+     theme_bw() + theme(plot.title = element_text(face = "bold"),
+                        legend.position = "none")
 ```
 
 ```{r}
@@ -231,23 +226,35 @@ head(data[, c("id", "day", "beep", "eventpl_w", "eventpl_w_l1")],
 
 # Visualization
 
+**Participants' time series**
 ```{r, fig.dim = c(10, 8), warning=F}
 # plot PA time series in chunks of participants
 id_select <- unique(data$id)[1:20]
 
-data %>% filter(id %in% id_select) %>%
+data %>% 
+  filter(id %in% id_select) %>%
   ggplot(aes(x = obs, y = pa, col = id)) +
      geom_line() + geom_point() + facet_wrap(~id) +
      theme_bw() + theme(legend.position = "none")
 ```
 
-**Plot individual means of participants for all mood items**
-```{r, fig.dim = c(10, 8), warning=F}
-# boxplots of individual means per item
+**Participants' associations between PA and event pleasantness**
+```{r, fig.dim = c(10, 8), warning=F, message=F}
+# plot participant's within-person association between event pleasantness and PA
+data %>%
+  filter(id %in% id_select) %>%
+  ggplot(aes(x = eventpl, y = pa, color = id)) +
+  geom_point(alpha = 0.6, size = 1.5) +
+  geom_smooth(method = "lm", se = FALSE, linewidth = 0.9) +
+  facet_wrap(~ id) + theme_bw() + theme(legend.position = "none") 
+```
 
+**Plot individual means of participants for all mood items**
+```{r, fig.dim = c(8, 6), warning=F}
 # select items
-item_select <- c("mood_cheerf", "mood_relaxed", "mood_irritat", "mood_anxious",
-                 "mood_down", "mood_guilty", "mood_insecur", "mood_lonely")
+item_select <- c("mood_cheerf", "mood_relaxed", "mood_irritat", 
+                 "mood_anxious", "mood_down", "mood_guilty", 
+                 "mood_insecur", "mood_lonely","mood_satisfi")
 
 # person means per item 
 person_means <- data %>%
@@ -264,8 +271,7 @@ ggplot(person_means, aes(x = iMean, y = item, col = item)) +
   scale_x_continuous(breaks = 1:7) +
   labs(title = "Boxplots for mood items", y = NULL,
        x = "Individual mean") +
-  theme_bw(base_size = 12) +
-  theme(plot.title = element_text(face = "bold"),
+  theme_bw() + theme(plot.title = element_text(face = "bold"),
         legend.position = "none")
 ```
 
@@ -277,10 +283,12 @@ pos <- c("mood_cheerf","mood_relaxed","mood_satisfi")
 # create combinations of settings
 data %>%
     select(soc_alone, location, all_of(pos)) %>%
-    tidyr::pivot_longer(all_of(pos), names_to="item", values_to="score") %>%
+    tidyr::pivot_longer(all_of(pos), names_to="item", 
+                        values_to="score") %>%
     tidyr::drop_na(score, soc_alone, location) %>%
     mutate(combo=paste(if_else(soc_alone==1,"Alone","Not alone"),
-                       if_else(grepl("home",tolower(location)),"& Home","& Other")),
+                       if_else(grepl("home",tolower(location)),
+                               "& Home","& Other")),
            resp=factor(pmin(pmax(round(score),1),7), levels=1:7)) %>%
 
 # plot  
@@ -290,12 +298,11 @@ data %>%
   scale_y_continuous(labels=scales::percent) + 
   labs(title = "Mood across settings", x = NULL,
        y = "Relative frequency") +
-  theme_bw(base_size = 12) +
-  theme(plot.title = element_text(face = "bold"))
+  theme_bw() + theme(plot.title = element_text(face = "bold"))
 ```
 
 **Plot mood item means over time of day**
-```{r}
+```{r, fig.dim = c(10, 8), warning=F}
 # select items
 items <- c("mood_cheerf","mood_relaxed","mood_satisfi",
            "mood_irritat","mood_anxious","mood_down",
@@ -318,13 +325,12 @@ ggplot(sumdat, aes(x = beep, y = mean, color = item)) +
     scale_x_continuous(breaks = sort(unique(sumdat$beep))) +
     labs(title = "Item means across beeps (time of day)",
          x = "Beep", y = "Mean response", color = "Item") +
-    theme_bw(base_size = 12) +
-    theme(plot.title = element_text(face = "bold"),
+    theme_bw() + theme(plot.title = element_text(face = "bold"),
         legend.position = "none")
 ```
 
 **Plot mood item means over study days**
-```{r}
+```{r, fig.dim = c(10, 8), warning=F}
 # select items
 items <- c("mood_cheerf","mood_relaxed","mood_satisfi",
            "mood_irritat","mood_anxious","mood_down",
@@ -347,13 +353,12 @@ ggplot(sumdat, aes(x = day, y = mean, color = item)) +
   scale_x_continuous(breaks = sort(unique(sumdat$day))) +
   labs(title = "Item means across study days",
        x = "Day", y = "Mean response", color = "Item") +
-  theme_bw(base_size = 12) +
-  theme(plot.title = element_text(face = "bold"),
+  theme_bw() + theme(plot.title = element_text(face = "bold"),
         legend.position = "none")
 ```
 
 **Plot individual ACF of PA and NA**
-```{r, fig.dim = c(5, 4), warning=F}
+```{r, fig.dim = c(10, 8), warning=F}
 # detrend individual PA and NA series
 long <- data %>%
   select(id, day, obs, pa, na) %>%
@@ -375,7 +380,8 @@ acf_tbl <- long %>%
         mask <- dplyr::lag(df$day, L) == df$day   
         x <- df$resid[mask]
         y <- dplyr::lag(df$resid, L)[mask]
-        if (sum(!is.na(x) & !is.na(y)) >= 3) cor(x, y, use="complete.obs") else NA_real_
+        if (sum(!is.na(x) & !is.na(y)) >= 3) 
+          cor(x, y, use="complete.obs") else NA
       })
     )
   }) %>%
@@ -391,8 +397,7 @@ ggplot(acf_tbl, aes(lag, acf, col = var)) +
   labs(title = "Autocorrelations across beeps (overnight excluded, detrended)",
        x = "Lag (beeps)", y = "ACF") +
   facet_wrap(~ var, nrow = 1) +
-  theme_bw(base_size = 12) + 
-  theme(plot.title = element_text(face = "bold"),
+  theme_bw() + theme(plot.title = element_text(face = "bold"),
         legend.position = "none")
 ```
 
@@ -437,16 +442,13 @@ data %>%
   semi_join(id_select_tbl, by = "id") %>%
   left_join(id_select_tbl %>% select(id, panel), by = "id") %>%
   arrange(id, obs) %>%
-  ggplot(aes(x = obs, y = pa, group = id)) +
+  ggplot(aes(x = obs, y = pa, color = id)) +
   geom_line() +
   geom_point() +
   facet_wrap(~ panel, nrow = 1) +
-  labs(
-    title = "PA time series at 1th, 25th, 50th, 75th, and 100th percentiles of within-id Mean",
-    x = "Observation", y = "PA"
-  ) +
-  theme_bw(base_size = 12) +
-  theme(legend.position = "none")
+  labs(title = "PA time series at 1th, 25th, 50th, 75th, and 100th percentiles of within-id Mean",
+       x = "Observation", y = "PA") +
+  theme_bw() + theme(legend.position = "none")
 ```
 
 **Plot participants based on PA variability**
@@ -458,11 +460,10 @@ pa_var <- data %>%
   filter(is.finite(pa_sd))
 
 # select targets
-qs <- quantile(pa_var$pa_sd, probs = c(0, 0.25, 0.5, 0.75, 1), na.rm = TRUE, type = 7)
-targets <- tibble(
-  which  = c("0th","25th","50th","75th","100th"),
-  target = as.numeric(qs)
-)
+qs <- quantile(pa_var$pa_sd, probs = c(0, 0.25, 0.5, 0.75, 1), 
+               na.rm = TRUE, type = 7)
+targets <- tibble(which  = c("0th","25th","50th","75th","100th"),
+                  target = as.numeric(qs))
 
 # pick the id whose SD is closest 
 remaining <- pa_var
@@ -490,16 +491,62 @@ data %>%
   semi_join(id_select_tbl, by = "id") %>%
   left_join(id_select_tbl %>% select(id, panel), by = "id") %>%
   arrange(id, obs) %>%
-  ggplot(aes(x = obs, y = pa, group = id)) +
+  ggplot(aes(x = obs, y = pa, color = id)) +
   geom_line() +
   geom_point() +
   facet_wrap(~ panel, nrow = 1) +
-  labs(
-    title = "PA time series at 0th, 25th, 50th, 75th, and 100th percentiles of within-id SD",
-    x = "Observation", y = "PA"
-  ) +
-  theme_bw(base_size = 12) +
-  theme(legend.position = "none")
+  labs(title = "PA time series at 0th, 25th, 50th, 75th, and 100th percentiles of within-id SD",
+       x = "Observation", y = "PA") +
+  theme_bw() + theme(legend.position = "none")
+```
+
+**Plot participants based on average PA level**
+```{r, fig.dim = c(10, 4), warning=F}
+# compute within-person slope of PA ~ eventpl_w
+pa_slope <- data %>%
+  group_by(id) %>%
+  summarise(slope = if (sum(!is.na(pa) & !is.na(eventpl_w)) > 1)
+    coef(lm(pa ~ eventpl_w, na.action = na.omit))[2] else NA, 
+    .groups = "drop") %>%
+  filter(is.finite(slope))
+
+# pick ids near quantiles of the slope distribution
+qs <- quantile(pa_slope$slope, probs = c(0, 0.25, 0.5, 0.75, 1), na.rm = TRUE)
+targets <- tibble(which = c("0th","25th","50th","75th","100th"),
+                  target = as.numeric(qs))
+
+remaining <- pa_slope
+picked <- vector("list", nrow(targets))
+for (i in seq_len(nrow(targets))) {
+  if (nrow(remaining) == 0) break
+  chosen <- remaining %>%
+    mutate(diff = abs(slope - targets$target[i])) %>%
+    arrange(diff, slope, id) %>%
+    slice(1) %>%
+    mutate(which = targets$which[i]) %>%
+    select(id, slope, which)
+  picked[[i]] <- chosen
+  remaining <- remaining %>% filter(id != chosen$id)
+}
+id_select_tbl <- bind_rows(picked) %>% distinct()
+
+id_select_tbl <- id_select_tbl %>%
+  arrange(slope) %>%
+  mutate(panel = paste0(which, ": ", id, " (Slope=", round(slope, 2), ")"),
+         panel = factor(panel, levels = panel))
+
+# plot the selected participants
+data %>%
+  semi_join(id_select_tbl, by = "id") %>%
+  left_join(id_select_tbl %>% select(id, panel), by = "id") %>%
+  ggplot(aes(x = eventpl_w, y = pa, color = id)) +
+  geom_point(alpha = 0.5) +
+  geom_smooth(method = "lm", se = FALSE, linewidth = 0.9) +
+  facet_wrap(~ panel, nrow = 1) +
+  labs(title = "Within-person PA ~ event pleasantness associations at 0th, 25th, 50th, 75th, and 100th slope quantiles",
+       x = "Event pleasantness",
+       y = "Positive affect (PA)") + 
+  theme_bw() + theme(legend.position = "none")
 ```
 
 # References & Further reading
@@ -507,4 +554,6 @@ data %>%
 Matejka, J., & Fitzmaurice, G. (2017). Same stats, different graphs: generating datasets with varied appearance and identical statistics through simulated annealing. In Proceedings of the 2017 CHI conference on human factors in computing systems (pp. 1290-1294).
 
 Siepe, B. S., Rieble, C. L., Tutunji, R., Rimpler, A., März, J., Proppert, R. K., & Fried, E. I. (2025). Understanding Ecological-Momentary-Assessment Data: A Tutorial on Exploring Item Performance in Ecological-Momentary-Assessment Data. Advances in Methods and Practices in Psychological Science, 8(1), 25152459241286877.
+
+Revol, J., Carlier, C., Lafit, G., Verhees, M., Sels, L., & Ceulemans, E. (2024). Preprocessing experience-sampling-method data: A step-by-step framework, tutorial website, R package, and reporting templates. Advances in Methods and Practices in Psychological Science, 7(4), 25152459241256609.
 

@@ -70,11 +70,18 @@ res <- 2.5
 ```
 
 **Standardized effect size**
-d<sub>GMA</sub> =
-( &beta;<sub>3</sub> &times; T ) / SD<sub>pooled,&nbsp;pre</sub>
-= ( -0.5 &times; 5 ) / &radic;(9 + 6.25)
+d<sub>GMA</sub> = \\
+( &beta;<sub>3</sub> &times; T ) / SD<sub>pooled,&nbsp;pre</sub> \\
+= ( -0.5 &times; 5 ) / &radic;(9 + 6.25) \\
 = ( -0.5 &times; 5 ) / 3.905
 &asymp; -0.64
+
+$$
+\text{Level 1: } y_{ij}
+= \color{blue}\beta_{0j}
+\color{black}+ \color{blue}\beta_{1j}\color{gray}w_{ij}
+\color{black}+ \color{red}\varepsilon_{ij}
+$$
 
 
 **Fit model**

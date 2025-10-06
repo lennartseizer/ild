@@ -697,6 +697,12 @@ library(sjPlot)
 tab_model(m8)
 ```
 
+```{r}
+install.packages("HLMdiag")
+library(HLMdiag)
+hlm_influence(m1, level = "id")
+```
+
 
 # Exercises
 1. (a) Estimate a model that predicts negative affect (`na`) based on whether participants are alone or with others `soc_alone`. (b) Test whether the previous effect is moderated by how pleasant the company of others is experienced `soc_pleasant`. Pick an appropriate random effects structure and check model assumptions.

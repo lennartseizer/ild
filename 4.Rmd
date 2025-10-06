@@ -11,6 +11,7 @@ install.packages("cowplot")
 install.packages("dplyr")
 install.packages("r2mlm")
 install.packages("parameters")
+install.packages("performance")
 ```
 
 ```{r setup, include=FALSE}

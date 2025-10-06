@@ -72,14 +72,17 @@ library(scales)
 library(r2mlm)
 library(tidyr)
 library(parameters)
+library(reshape2)
+library(HLMdiag)
+library(sjPlot)
 ```
 
 ```{r}
-# fit base model
+# fit null model
 m1 <- lme(pa ~ 1, 
           random = ~1|id,
           data = data, 
-          na.action = na.omit)
+          na.action = na.exclude)
 
 summary(m1)
 ```
@@ -91,27 +94,26 @@ fixef(m1)
 # random effects
 head(ranef(m1))
 ```
-
+**Plot estimates**
 ```{r, fig.dim = c(10, 4), warning=F}
-# plot individual intercepts and residuals
+# individual intercepts and residuals
 hist1 <- ggplot(data.frame(value = coef(m1)[[1]]), aes(x = value)) +
-  geom_histogram(aes(y = after_stat(density)), bins = 30, color = "white") +
+  geom_histogram(aes(y = after_stat(density)), bins = 30) +
   geom_density(linewidth = 0.8, color = "blue") +
   scale_x_continuous(breaks = 1:7) +
   labs(x = "Average Positive Affect", y = "Density") +
   theme_bw()
 
 hist2 <- ggplot(data.frame(value = resid(m1)), aes(x = value)) +
-  geom_histogram(aes(y = after_stat(density)), bins = 30, color = "white") +
+  geom_histogram(aes(y = after_stat(density)), bins = 30) +
   geom_density(linewidth = 0.8, color = "blue") +
-  scale_x_continuous(breaks = 1:7) +
   labs(x = "Residual", y = "Density") +
   theme_bw()
   
-plot_grid(hist1, hist2)
+cowplot::plot_grid(hist1, hist2)
 ```
 
-**Shrinkage**: compare pooled estimates with non-pooled means
+**Shrinkage: compare pooled vs non-pooled means**
 ```{r, fig.dim = c(10, 4), warning=F}
 # compute individual means
 indiv_means <- data %>%
@@ -127,21 +129,22 @@ hist1 <- ggplot(data.frame(value = coef(m1)[[1]]), aes(x = value)) +
   labs(title = "Average Positive Affect", x = "BLUPs") +
   theme_bw()
 
-hist2 <- ggplot(data.frame(value = indiv_means$indiv_mean), aes(x = value)) +
+hist2 <- ggplot(data.frame(value = indiv_means$indiv_mean), 
+                aes(x = value)) +
   geom_histogram(aes(y = after_stat(density)), bins = 30) +
   geom_density(linewidth = 0.8, color = "blue") +
   scale_x_continuous(breaks = 1:7) +
   labs(title = "Average Positive Affect", x = "Observed means") +
   theme_bw()
   
-plot_grid(hist1, hist2)
+cowplot::plot_grid(hist1, hist2)
 
 # pooled vs non-pooled means
 head(data.frame(BLUP = coef(m1)[[1]], 
                 Obs_Means = indiv_means$indiv_mean))
 ```
 
-**ICC**: Intraclass Correlation Coefficient
+**Intraclass Correlation Coefficient (ICC)**
 ```{r}
 int_var <- getVarCov(m1)[1,1] # random intercept variance
 res_var <- sigma(m1)^2 # residual variance
@@ -163,16 +166,16 @@ t3 <- ggplot(d, aes(idx, beep)) + geom_line() + geom_point() +
 t4 <- ggplot(d, aes(idx, resptime)) + geom_line() + geom_point() + 
   labs(x="Index", y="resptime") + theme_bw()
 
-plot_grid(t1, t2, t3, t4)
+cowplot::plot_grid(t1, t2, t3, t4)
 ```
 
 **Variance decomposition based on time variables**
-```{r, fig.dim = c(5, 4), warning=F, message=F}
+```{r, fig.dim = c(10, 8), warning=F, message=F}
 # intercept-only model with time-variance components 
 m2_lme <- lme(pa ~ 1, 
               random = ~1|id/day/beep,
               data = data, 
-              na.action = na.omit)
+              na.action = na.exclude)
 
 m2_lmer <- lmer(pa ~ 1 + (1|id) + (1|day) + (1 | beep) + (1|id:day) +
                   (1|id:beep) + (1|day:beep),
@@ -189,7 +192,7 @@ vc <- as.data.frame(VarCorr(m2_lmer)) %>%
   mutate(Prop = vcov / sum(vcov)) %>%
   arrange(Prop)
 
-# clearer plot: sorted horizontal bars with percent labels
+# plot variance components
 ggplot(vc, aes(x = Prop, y = reorder(grp, Prop), fill = grp)) +
   geom_col(width = 0.7, color = "white", show.legend = FALSE) +
   geom_text(aes(label = percent(Prop, accuracy = 0.1)),
@@ -208,7 +211,7 @@ ggplot(vc, aes(x = Prop, y = reorder(grp, Prop), fill = grp)) +
 m3 <- lme(pa ~ eventpl_w, 
           random = ~eventpl_w|id,
           data = data, 
-          na.action = na.omit)
+          na.action = na.exclude)
 
 summary(m3)
 ```
@@ -249,12 +252,29 @@ p_res <- ggplot(res_df, aes(x = Residual)) +
 # intercept vs slope with fixed-effect reference lines
 p_scatter <- ggplot(cf, aes(x = Intercept, y = Slope)) +
   geom_point(alpha = 0.6) + 
-  geom_vline(xintercept = as.numeric(fixef(m3)[1]), linetype = "dotted") +
-  geom_hline(yintercept = as.numeric(fixef(m3)[2]), linetype = "dotted") +
+  geom_vline(xintercept = as.numeric(fixef(m3)[1]), linetype="dotted") +
+  geom_hline(yintercept = as.numeric(fixef(m3)[2]), linetype="dotted") +
   labs(x = "Intercept", y = "Slope") + theme_bw()
 
 # plot
-plot_grid(p_int, p_slope, p_res, p_scatter)
+cowplot::plot_grid(p_int, p_slope, p_res, p_scatter)
+```
+
+**Spaghetti plot**
+```{r, fig.dim = c(10, 8), warning=F, message=F}
+data_plot <- data %>% mutate(pred = predict(m3)) 
+
+ggplot(data_plot, aes(x = eventpl_w, y = pa, group = id)) +
+  # individual lines
+  geom_line(aes(y = pred, color = id), alpha = 0.4, linewidth = 0.6) +
+  # population-level line
+  geom_abline(intercept = fixef(m3)[1], slope = fixef(m3)[2], 
+              color = "black", linewidth = 1.2) +
+  # aesthetics
+  scale_color_viridis_d(option = "turbo", guide = "none") +
+  theme_bw(base_size = 12) +
+  labs(x = "Event Pleasantness (within-person)",
+       y = "Predicted Positive Affect")
 ```
 
 **Explained variance**
@@ -273,13 +293,11 @@ r2mlm_manual(
 ```
 
 **Nakagawa's R2**
-$$
-R^2_m = \frac{\sigma^2_{\text{fixed}}}
-              {\sigma^2_{\text{fixed}} + \sigma^2_{\text{random}} + \sigma^2_{\text{residual}}}
-\ \ \ \ 
-R^2_c = \frac{\sigma^2_{\text{fixed}} + \sigma^2_{\text{random}}}
-              {\sigma^2_{\text{fixed}} + \sigma^2_{\text{random}} + \sigma^2_{\text{residual}}}
-$$
+R<sup>2</sup><sub>m</sub> = ( &sigma;<sup>2</sup><sub>fixed</sub> ) /
+( &sigma;<sup>2</sup><sub>fixed</sub> + &sigma;<sup>2</sup><sub>random</sub> + &sigma;<sup>2</sup><sub>residual</sub> )
+&nbsp;&nbsp;&nbsp;&nbsp;
+R<sup>2</sup><sub>c</sub> = ( &sigma;<sup>2</sup><sub>fixed</sub> + &sigma;<sup>2</sup><sub>random</sub> ) /
+( &sigma;<sup>2</sup><sub>fixed</sub> + &sigma;<sup>2</sup><sub>random</sub> + &sigma;<sup>2</sup><sub>residual</sub> )
 
 ```{r}
 # extract variances
@@ -290,6 +308,7 @@ var_res <- sigma(m3)^2
 # calculate R2s
 R2m <- var_fixed / (var_fixed + var_rand + var_res)
 R2c <- (var_fixed + var_rand) / (var_fixed + var_rand + var_res)
+
 c(R2_marginal = R2m, R2_conditional = R2c)
 
 # with helper function
@@ -304,7 +323,7 @@ performance::r2(m3)
 m4 <- lme(pa ~ eventpl_w + eventpl_bc + age, 
           random = ~eventpl_w|id,
           data = data, 
-          na.action = na.omit)
+          na.action = na.exclude)
 
 summary(m4)
 ```
@@ -325,7 +344,7 @@ data$age_c <- data$age - mean(aggregate(data, age ~ id, unique)$age)
 m4_c <- lme(pa ~ eventpl_w + eventpl_bc + age_c, 
           random = ~eventpl_w|id,
           data = data, 
-          na.action = na.omit)
+          na.action = na.exclude)
 
 summary(m4_c)
 ```
@@ -356,32 +375,30 @@ performance::r2(m4)
 m5 <- lme(pa ~ eventpl_w + use_alcohol, 
           random = ~eventpl_w + use_alcohol|id,
           data = data, 
-          na.action = na.omit)
+          na.action = na.exclude)
 
 summary(m5)
 ```
 
 > `lme4` **package vignette:**  
-*There is not yet consensus about how to deal with singularity, or more generally to choose which random-effects specification (from a range of choices of varying complexity) to use. Some proposals include:*  
- * *avoid fitting overly complex models in the first place, i.e. design experiments/restrict models a priori such that the variance-covariance matrices can be estimated precisely enough to avoid singularity (Matuschek et al 2017)*  
- - *use some form of model selection to choose a model that balances predictive accuracy and  overfitting/type I error (Bates et al 2015, Matuschek et al 2017)*  
- *- “keep it maximal”, i.e. fit the most complex model consistent with the experimental design, removing only terms required to allow a non-singular fit (Barr et al. 2013), or removing further terms based on p-values or AIC*  
+*There is not yet consensus about how to deal with singularity, or more generally to choose which random-effects specification (from a range of choices of varying complexity) to use. Some proposals include:*    
+ - *avoid fitting overly complex models in the first place, i.e. design experiments/restrict models a priori such that the variance-covariance matrices can be estimated precisely enough to avoid singularity (Matuschek et al 2017)*    
+ - *use some form of model selection to choose a model that balances predictive accuracy and  overfitting/type I error (Bates et al 2015, Matuschek et al 2017)*    
+ - *“keep it maximal”, i.e. fit the most complex model consistent with the experimental design, removing only terms required to allow a non-singular fit (Barr et al. 2013), or removing further terms based on p-values or AIC*  
 
+**Example RQ: within-participant** `eventpl` **->** `pa` **with covariates** `use_alcohol` **and** `use_alcohol`
 ```{r}
-# example RQ: PA <- eventpl within-participants
-# covariates: use_alcohol, use_coffee
-
 # base model
 m6 <- lme(pa ~ eventpl_bc + use_alcohol + use_coffee, 
           random = ~1|id,
           data = data, 
-          na.action = na.omit)
+          na.action = na.exclude)
 
 # random effect for use_alcohol
 m7 <- lme(pa ~ eventpl_bc + use_alcohol + use_coffee, 
           random = ~use_alcohol|id,
           data = data, 
-          na.action = na.omit)
+          na.action = na.exclude)
 
 anova(m6, m7)
 
@@ -389,7 +406,7 @@ anova(m6, m7)
 m8 <- lme(pa ~ eventpl_bc + use_alcohol + use_coffee, 
           random = ~use_coffee|id,
           data = data, 
-          na.action = na.omit)
+          na.action = na.exclude)
 
 anova(m6, m8)
 
@@ -397,62 +414,155 @@ anova(m6, m8)
 m8 <- lme(pa ~ eventpl_w + eventpl_bc + use_alcohol + use_coffee, 
           random = ~eventpl_w + use_alcohol|id,
           data = data, 
-          na.action = na.omit)
+          na.action = na.exclude)
 
 summary(m8)
 ```
 
 # Moderation analysis
 
-**L2 moderation**
+**Cross-level moderation**
 ```{r}
+# fit moderation model
 m9 <- lme(pa ~ eventpl_w * status, 
-          random = ~eventpl|id,
+          random = ~eventpl_w|id,
           data = data,
-          na.action = na.omit)
+          na.action = na.exclude)
 
 summary(m9)
 ```
 
-**L1 moderation**
+**Spaghetti plot**
+```{r, fig.dim = c(10, 8), warning=F, message=F}
+# subject-specific predictions
+data_plot <- data %>% mutate(pred_id = as.numeric(predict(m9, level = 1)))
+
+# fixed effects matrix
+fe <- fixef(m9)
+grid_fe <- expand.grid(
+  eventpl_w = c(min(data$eventpl_w, na.rm = TRUE), max(data$eventpl_w, na.rm = TRUE)),
+  status    = levels(factor(data$status)))
+grid_fe$yhat <- as.numeric(model.matrix(~ eventpl_w * status, data = grid_fe) %*% fe)
+
+# plot
+ggplot() +
+  # individual lines
+  geom_line(data = data_plot, aes(x = eventpl_w, y = pred_id, group = id, color = id),
+            alpha = 0.45, linewidth = 0.6) +
+  # population line per status
+  geom_line(data = grid_fe, aes(x = eventpl_w, y = yhat, group = status), 
+            linewidth = 1.3, color = "black") +
+  facet_wrap(~ status, nrow = 1, scales = "free_x") + guides(color = "none") + 
+  theme_bw(base_size = 12) +
+  labs(x = "Event pleasantness (within-person)", 
+       y = "Predicted positive affect")
+```
+
+**Random effect distributions**
+```{r, fig.dim = c(10, 8), warning=F, message=F}
+# subject-specific predictions
+re <- as.data.frame(ranef(m9))
+re$id <- rownames(re)
+re <- re %>% select(id, re_slope = `eventpl_w`)
+
+# fixed effects 
+id_status <- data %>% distinct(id, status) %>% mutate(id = as.character(id))
+fe <- fixef(m9)
+lvl <- levels(factor(data$status))
+get_fixed_slope <- function(st) {
+  base <- unname(fe["eventpl_w"])
+  term <- paste0("eventpl_w:status", st)
+  if (!is.na(fe[term])) base <- base + unname(fe[term])
+  base
+}
+fixed_by_status <- setNames(sapply(lvl, get_fixed_slope), lvl)
+
+# subject-specific slope = fixed(status) + random slope
+df_slopes <- re %>%
+  left_join(id_status, by = "id") %>%
+  mutate(fixed_slope = fixed_by_status[as.character(status)],
+         slope_hat   = fixed_slope + re_slope) %>%
+  filter(!is.na(status))
+
+# overlapping densities with vertical lines at status group means
+group_means <- df_slopes %>%
+  group_by(status) %>%
+  summarise(mean_slope = mean(slope_hat, na.rm = TRUE), .groups = "drop")
+
+ggplot(df_slopes, aes(x = slope_hat, fill = status)) +
+  geom_density(alpha = 0.4, color = NA, adjust = 1.0) +
+  geom_vline(data = group_means, aes(xintercept = mean_slope, color = status),
+             linewidth = 0.9, show.legend = FALSE) +
+  theme_bw(base_size = 12) +
+  labs(x = "Slope of eventpl_w on PA (subject-specific)", y = "Density")
+```
+
+
+**Within-person moderation**
 ```{r}
+# fit moderation model
 m10 <- lme(pa ~ eventpl_w * soc_alone, 
           random = ~eventpl_w|id,
           data = data, 
-          na.action = na.omit)
+          na.action = na.exclude)
 
 summary(m10)
 ```
 
 ```{r}
-m10 <- lme(pa ~ eventpl_w * soc_alone, 
+# fit moderation model with random effect
+m11 <- lme(pa ~ eventpl_w * soc_alone, 
           random = ~eventpl_w * soc_alone|id,
           data = data, 
-          na.action = na.omit)
+          na.action = na.exclude)
 
-summary(m10)
+summary(m11)
 ```
 
-# Within-subject mediation analysis
+**Fixed-effects interaction plot**
+```{r, fig.dim = c(10,8), warning=F, message=F}
+# fixed effects & VCOV
+fe <- fixef(m10) 
+VC <- vcov(m10)
+xseq <- seq(min(data$eventpl_w, na.rm=TRUE), 
+            max(data$eventpl_w, na.rm=TRUE), length.out=100)
+levs <- levels(factor(data$soc_alone))
+grid <- expand.grid(eventpl_w = xseq, soc_alone = levs)
+grid$soc_alone <- factor(grid$soc_alone, levels = levs)
+
+# design, preds, SEs
+X <- model.matrix(~ eventpl_w * soc_alone, data = grid)
+grid$yhat <- as.numeric(X %*% fe)
+grid$se   <- sqrt(rowSums((X %*% VC) * X))
+grid <- grid %>% mutate(lwr = yhat - 1.96*se, upr = yhat + 1.96*se)
+
+# plot
+ggplot(grid, aes(eventpl_w, yhat, color = soc_alone, fill = soc_alone)) +
+  geom_ribbon(aes(ymin = lwr, ymax = upr), alpha = .2, color = NA) +
+  geom_line(linewidth = 1.1) + theme_bw(base_size = 12) +
+  labs(x = "Event pleasantness (within-person)", 
+       y = "Predicted positive affect (PA)",
+       color = "Context", fill = "Context")
+```
+
+# Within-person mediation analysis
 
 <figure>
     <img src="https://upload.wikimedia.org/wikipedia/commons/f/f8/Simple_Mediation_Model.png">
 </figure>
 
-
+**Prepare double-entry, stacked dataset**
 ```{r}
-library(reshape2)
-
-data_med <- data[, c("id", "obs", "soc_pleasant", "eventpl_w", "pa")]
+# select variables
+data_med <- data[, c("id", "obs", "use_alcohol", "eventpl_w", "pa")]
 data_med$m <- data_med$eventpl_w
 
-data_med <- melt(
-  data_med,
-  id.vars   = c("id", "obs", "soc_pleasant", "eventpl_w"),
-  measure.vars = c("m","pa"),              # <- explicitly stack m and pa
-  variable.name = "dv",
-  value.name    = "z"
-)
+# melt y and m into z
+data_med <- melt(data_med,
+                 id.vars   = c("id", "obs", "use_alcohol", "eventpl_w"),
+                 measure.vars = c("m","pa"),              
+                 variable.name = "dv",
+                 value.name    = "z")
 
 # adding dummy variables
 data_med$dv <- factor(data_med$dv, levels = c("m","pa"))  # mediator first
@@ -464,33 +574,30 @@ data_med$obs <- scale(data_med$obs, center = TRUE, scale = FALSE)
 data_med <- data_med[order(data_med$id,data_med$obs),]
 ```
 
+**Fit mediation model**
 ```{r}
-# fit mediation model
-
                # intercepts
 m_med <- lme(z ~ 0 + dm + dy +  
                # prediction of mediator 
-               dm:soc_pleasant + 
+               dm:use_alcohol + 
                # prediction of outcome
-               dy:eventpl_w + dy:soc_pleasant,
+               dy:eventpl_w + dy:use_alcohol,
                # random effects for all three paths
                random = ~ 0 + dm + dy | id,  
                # separate residual variance for each outcome
                weights = varIdent(form = ~ 1 | dv), 
-               data=data_med,
-               na.action=na.omit,
+               data = data_med,
+               na.action = na.exclude,
                control = lmeControl(opt = "optim"))
 
 summary(m_med)
 ```
 
-`dm` - intercept when $m$ is the outcome
-`dy` - intercept when $y$ is the outcome
-`dm:soc_pleasant` - effect of $x$ when $m$ is the outcome (i.e., 𝑎 path), 𝑎𝑗
-dm:fwkdis_cw or SyM - effect of 𝑀 when 𝑌 is the outcome (i.e., 𝑏 path), 𝑏𝑗
-dm:fwkstrs_cw or SyX - effect of 𝑋 when 𝑌 is the outcome (i.e., direct effect), 𝑐′𝑗
-dm:timec or Sm:timec - effect of covariate (timec) on 𝑀
-dy:timec or Sy:timec - effect of covariate (timec) on 𝑌
+`dm` - intercept when `m` is the outcome  
+`dy` - intercept when `y` is the outcome  
+`dm:use_alcohol` - effect of `x` when `m` is the outcome (i.e., `a` path)  
+`dy:eventpl_w` - effect of `m` when `y` is the outcome (i.e., `b` path)  
+`dy:use_alcohol` - effect of `x` when `y` is the outcome (i.e., `c` path)
 
 # Lagged analysis
 
@@ -504,12 +611,12 @@ data <- data %>%
   ungroup()
 
 # fit model with lagged eventpl
-m9 <- lme(pa ~ eventpl_w_l1 + pa_l1, 
+m12 <- lme(pa ~ eventpl_w_l1 + pa_l1, 
           random = ~eventpl_w_l1 + pa_l1|id,
           data = data, 
-          na.action = na.omit)
+          na.action = na.exclude)
 
-summary(m9)
+summary(m12)
 ```
 
 # VAR model
@@ -521,7 +628,8 @@ summary(m9)
 **Prepare variables**
 ```{r}
 # pa
-data$pa_b <- ave(data$pa, data$id, FUN=function(x)mean(x, na.rm = TRUE)) 
+data$pa_b <- ave(data$pa, data$id, 
+                 FUN=function(x)mean(x, na.rm = TRUE)) 
 data$pa_w <- data$pa - data$pa_b 
 data <- data %>%
   arrange(id, obs) %>%                
@@ -531,7 +639,8 @@ data <- data %>%
   ungroup()
 
 # na
-data$na_b <- ave(data$na, data$id, FUN=function(x)mean(x, na.rm = TRUE)) 
+data$na_b <- ave(data$na, data$id, 
+                 FUN=function(x)mean(x, na.rm = TRUE)) 
 data$na_w <- data$na - data$na_b 
 data <- data %>%
   arrange(id, obs) %>%                
@@ -576,7 +685,7 @@ cov(residuals(var1), residuals(var2), use = "complete.obs")
 m3 <- lme(pa ~ eventpl_w, 
           random = ~eventpl_w|id,
           data = data, 
-          na.action = na.omit)
+          na.action = na.exclude)
 ```
 
 **L1 residuals**
@@ -588,18 +697,21 @@ df   <- data.frame(res = as.numeric(res), pred = as.numeric(pred))
 
 # density of residuals
 p_dens <- ggplot(df, aes(x = res)) + geom_density() +
-  labs(title = "Distribution of Level-1 residuals", x = "Residual", y = "Density") +
+  labs(title = "Distribution of Level-1 residuals", x = "Residual", 
+       y = "Density") +
   theme_bw()
 
 # q-q plot
 p_qq <- ggplot(df, aes(sample = res)) + stat_qq() + stat_qq_line() +
-  labs(title = "Q-Q Plot of Level-1 residuals", x = "Theoretical quantiles", y = "Sample quantiles") +
+  labs(title = "Q-Q Plot of Level-1 residuals", 
+       x = "Theoretical quantiles", y = "Sample quantiles") +
   theme_bw()
 
 # predicted vs residuals
-p_scatter <- ggplot(df, aes(x = pred, y = res)) + geom_point(alpha = 0.4) +
+p_scatter <- ggplot(df, aes(x = pred, y = res)) + geom_point(alpha=0.4) +
   geom_smooth(method = "loess", se = FALSE, linewidth = 0.6) +
-  labs(title = "Predicted vs Residuals", x = "Predicted", y = "Residuals") +
+  labs(title = "Predicted vs Residuals", x = "Predicted", 
+       y = "Residuals") +
   theme_bw()
 
 # ACF of residuals 
@@ -619,7 +731,7 @@ p_acf <- ggplot(acf_df, aes(x = lag, y = acf)) +
   labs(title = "ACF of Level-1 residuals", x = "Lag", y = "ACF") +
   theme_bw() + ylim(c(-.1,.25))
 
-plot_grid(p_dens, p_qq, p_scatter, p_acf)
+cowplot::plot_grid(p_dens, p_qq, p_scatter, p_acf)
 ```
 
 **Fit model with AR errors**
@@ -627,7 +739,7 @@ plot_grid(p_dens, p_qq, p_scatter, p_acf)
 m3_ar <- lme(pa ~ eventpl_w, 
              random = ~eventpl_w|id,
              data = data, 
-             na.action = na.omit,
+             na.action = na.exclude,
              correlation = corAR1(form = ~beep|id/day))
 ```
 
@@ -645,14 +757,14 @@ p_dens <- ggplot(df, aes(x = res)) + geom_density() +
 
 # q-q plot
 p_qq <- ggplot(df, aes(sample = res)) + stat_qq() + stat_qq_line() +
-  labs(title = "Q-Q Plot of Level-1 residuals", x = "Theoretical quantiles", 
-       y = "Sample quantiles") + theme_bw()
+  labs(title = "Q-Q Plot of Level-1 residuals", 
+       x = "Theoretical quantiles", y = "Sample quantiles") + theme_bw()
 
 # predicted vs residuals
 p_scatter <- ggplot(df, aes(x = pred, y = res)) + geom_point(alpha = 0.4) +
   geom_smooth(method = "loess", se = FALSE, linewidth = 0.6) +
-  labs(title = "Predicted vs Residuals", x = "Predicted", y = "Residuals") +
-  theme_bw()
+  labs(title = "Predicted vs Residuals", x = "Predicted", 
+       y = "Residuals") + theme_bw()
 
 # ACF of residuals 
 acf_obj <- acf(df$res, plot = FALSE, na.action = na.pass)
@@ -672,43 +784,42 @@ p_acf <- ggplot(acf_df, aes(x = lag, y = acf)) +
   theme_bw() + ylim(c(-.1,.25))
 
 # plot
-plot_grid(p_dens, p_qq, p_scatter, p_acf)
+cowplot::plot_grid(p_dens, p_qq, p_scatter, p_acf)
 ```
 
 **L2 residuals**
 ```{r}
 # extract random effects 
-re_int <- as.numeric(ranef(m3_ar)[,"(Intercept)"]) # level-2 intercepts
-re_slope <- as.numeric(ranef(m3_ar)[,"eventpl_w"]) # level-2 slopes 
+re_int <- as.numeric(ranef(m3_ar)[,"(Intercept)"]) #level-2 intercepts
+re_slope <- as.numeric(ranef(m3_ar)[,"eventpl_w"]) #level-2 slopes 
 
 df_int <- data.frame(effect = re_int)
 df_slope <- data.frame(effect = re_slope)
 
 # intercept residuals
 p_int_dens <- ggplot(df_int, aes(x = effect)) + geom_density() +
-  labs(title = "Distribution of intercept residuals", x = "Intercept BLUP", 
-       y = "Density") + theme_bw()
+  labs(title = "Distribution of intercept residuals", 
+       x = "Intercept BLUP", y = "Density") + theme_bw()
 
 p_int_qq <- ggplot(df_int, aes(sample = effect)) + stat_qq() + stat_qq_line() +
-  labs(title = "Q–Q Plot of intercept residuals", x = "Theoretical quantiles", 
-       y = "Sample quantiles") + theme_bw()
+  labs(title = "Q–Q Plot of intercept residuals", 
+       x = "Theoretical quantiles", y = "Sample quantiles") + theme_bw()
 
 # slope residuals
 p_slope_dens <- ggplot(df_slope, aes(x = effect)) + geom_density() +
-  labs(title = "Distribution of slope residuals", x = "eventpl_w slope BLUP", 
-       y = "Density") + theme_bw()
+  labs(title = "Distribution of slope residuals", 
+       x = "eventpl_w slope BLUP", y = "Density") + theme_bw()
 
 p_slope_qq <- ggplot(df_slope, aes(sample = effect)) + stat_qq() + stat_qq_line() +
-  labs(title = "Q–Q Plot of slope residuals", x = "Theoretical quantiles", 
-       y = "Sample quantiles") + theme_bw()
+  labs(title = "Q–Q Plot of slope residuals", 
+       x = "Theoretical quantiles", y = "Sample quantiles") + theme_bw()
 
 # plot
-plot_grid(p_int_dens, p_int_qq, p_slope_dens, p_slope_qq)
+cowplot::plot_grid(p_int_dens, p_int_qq, p_slope_dens, p_slope_qq)
 ```
 
+**Outliers / Influential observations**
 ```{r}
-install.packages("HLMdiag")
-library(HLMdiag)
 m3_infl <- hlm_influence(m3, level = "id")
 dotplot_diag(m3_infl$cooksd, name = "cooks.distance", cutoff = 4/328)
 ```
@@ -717,58 +828,61 @@ dotplot_diag(m3_infl$cooksd, name = "cooks.distance", cutoff = 4/328)
 
 **Confidence intervals**
 ```{r}
-# confidence intervals
+# 95% CI
 intervals(m3, level = .95)
 ```
 
 **Standardized coefficients**
 ```{r}
-library(parameters)
+
 standardize_parameters(m3)
 ```
 
 **Cohen's d**
-Framework: https://doi.org/10.1037/a0014699, https://doi.org/10.1037/a0030048  
-Detailed tutorial: https://solomonkurz.netlify.app/blog/2021-04-22-effect-sizes-for-experimental-trials-analyzed-with-multilevel-growth-models-two-of-two/
+Framework:  
+https://doi.org/10.1037/a0014699, https://doi.org/10.1037/a0030048  
+Detailed tutorial:   
+https://solomonkurz.netlify.app/blog/2021-04-22-effect-sizes-for-experimental-trials-analyzed-with-multilevel-growth-models-two-of-two/
 
-$$
-d_{GMA} = \frac{b_{int}*time}{SD_{pooled}}
-\ \ \ \ 
-SD_{pooled} = \sqrt{\frac{SD^2_{c0}+SD^2_{t0}}{2}}
-$$
+d<sub>GMA</sub> = ( b<sub>int</sub> &times; time ) / SD<sub>pooled</sub>
+&nbsp;&nbsp;&nbsp;&nbsp;
+SD<sub>pooled</sub> = &radic;[ ( SD<sup>2</sup><sub>c0</sub> + SD<sup>2</sup><sub>t0</sub> ) / 2 ]
 
 ```{r}
 # fit model
-m10 <- lme(pa ~ day * status, 
+m13 <- lme(pa ~ day * status, 
            random = ~day|id,
            data = data[!data$status == "depressed",], 
-           na.action = na.omit)
+           na.action = na.exclude)
 
-summary(m10)
+summary(m13)
 
 # psychotic sd_d1
-sd_d1_p <- sd(data$pa[data$status=="psychotic" & data$day==1], na.rm = T)
+sd_d1_p <- sd(data$pa[data$status=="psychotic" & data$day==1], na.rm=T)
 
 # control sd_d1
-sd_d1_c <- sd(data$pa[data$status=="control" & data$day==1], na.rm = T)
+sd_d1_c <- sd(data$pa[data$status=="control" & data$day==1], na.rm=T)
 
 # pooled sd
 pooled_sd <- sqrt((sd_d1_p^2 + sd_d1_c^2) / 2)
 
 # d_gma
-as.numeric(fixef(m10)["day:statuspsychotic"]) *5 / pooled_sd
+as.numeric(fixef(m10)["day:statuspsychotic"]) * 5 / pooled_sd
 ```
 
-# Example write-up
+# Publication ready tables 
 ```{r}
-install.packages("sjPlot")
-library(sjPlot)
+tab_model(m1)
 tab_model(m1 ,m3, m4)
+```
+
+```{r, include=F}
+1+2
 ```
 
 
 # Exercises
+>
 1. (a) Estimate a model that predicts negative affect (`na`) based on whether participants are alone or with others `soc_alone`. (b) Test whether the previous effect is moderated by how pleasant the company of others is experienced `soc_pleasant`. Pick an appropriate random effects structure and check model assumptions.
-  
 2. (a) Estimate the time trend of negative affect (`na`) over the study period, and (b) whether this time trend differs between mental health status groups (`status`). Report standardized effect sizes for the time:group interactions. 
 

@@ -13,6 +13,7 @@ install.packages("r2mlm")
 install.packages("parameters")
 install.packages("performance")
 install.packages("reshape2")
+install.packages("HLMdiag")
 ```
 
 ```{r setup, include=FALSE}

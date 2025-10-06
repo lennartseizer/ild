@@ -28,7 +28,7 @@ data$na <- rowMeans(data[,c("mood_irritat", "mood_anxious", "mood_down",
 
 data$eventpl_b <- ave(data$eventpl, data$id, FUN=function(x)mean(x, na.rm = TRUE)) 
 data$eventpl_w <- data$eventpl - data$eventpl_b 
-eventpl_gm <- mean(data$eventpl_b)#mean(aggregate(data, eventpl_b ~ id, unique)$eventpl_b)
+eventpl_gm <- mean(aggregate(data, eventpl_b ~ id, unique)$eventpl_b)
 data$eventpl_bc <- data$eventpl_b - eventpl_gm
 
 # create lagged variables
@@ -69,6 +69,7 @@ library(cowplot)
 library(scales)
 library(r2mlm)
 library(tidyr)
+library(parameters)
 ```
 
 ```{r}
@@ -118,14 +119,14 @@ indiv_means <- data %>%
 
 # plot pooled vs non-pooled means
 hist1 <- ggplot(data.frame(value = coef(m1)[[1]]), aes(x = value)) +
-  geom_histogram(aes(y = after_stat(density)), bins = 30, color = "white") +
+  geom_histogram(aes(y = after_stat(density)), bins = 30) +
   geom_density(linewidth = 0.8, color = "blue") +
   scale_x_continuous(breaks = 1:7) +
   labs(title = "Average Positive Affect", x = "BLUPs") +
   theme_bw()
 
 hist2 <- ggplot(data.frame(value = indiv_means$indiv_mean), aes(x = value)) +
-  geom_histogram(aes(y = after_stat(density)), bins = 30, color = "white") +
+  geom_histogram(aes(y = after_stat(density)), bins = 30) +
   geom_density(linewidth = 0.8, color = "blue") +
   scale_x_continuous(breaks = 1:7) +
   labs(title = "Average Positive Affect", x = "Observed means") +
@@ -156,8 +157,8 @@ t1 <- ggplot(d, aes(idx, obs)) + geom_line() + geom_point() +
 t2 <- ggplot(d, aes(idx, day)) + geom_line() + geom_point() + 
   labs(x="Index", y="day") + theme_bw()
 t3 <- ggplot(d, aes(idx, beep)) + geom_line() + geom_point() + 
-  labs(x="Index", y="beep")     + theme_bw()
-t4 <- ggplot(d, aes(idx, beeptime)) + geom_line() + geom_point() + 
+  labs(x="Index", y="beep") + theme_bw()
+t4 <- ggplot(d, aes(idx, resptime)) + geom_line() + geom_point() + 
   labs(x="Index", y="resptime") + theme_bw()
 
 plot_grid(t1, t2, t3, t4)
@@ -218,24 +219,86 @@ fixef(m3)
 head(ranef(m3))
 ```
 
+**Plot estimates**
 ```{r}
-# plot estimates
-hist(coef(m3)[[1]], breaks = 30, freq=FALSE, main="", 
-     xlab="Intercepts")
-hist(coef(m3)[[2]], breaks = 30, freq=FALSE, main="", 
-     xlab="Slopes")
-hist(resid(m3), breaks = 30, freq=FALSE, main="", 
-     xlab="Residuals")
-plot(coef(m3)[[1]], coef(m3)[[2]], xlab="Intercept", ylab="Slope")
-abline(v=fixef(m3)[1], lty="dotted")
-abline(h=fixef(m3)[2], lty="dotted")
+# extract random estimates
+cf <- as.data.frame(coef(m3))
+names(cf)[1:2] <- c("Intercept", "Slope") 
+res_df <- data.frame(Residual = resid(m3))
+
+# intercepts
+p_int <- ggplot(cf, aes(x = Intercept)) +
+  geom_histogram(bins = 30, aes(y = after_stat(density))) +
+  geom_density(linewidth = 0.8, color = "blue") +
+  labs(x = "Intercepts", y = "Density") + theme_bw()
+
+# slopes
+p_slope <- ggplot(cf, aes(x = Slope)) +
+  geom_histogram(bins = 30, aes(y = after_stat(density))) +
+  geom_density(linewidth = 0.8, color = "blue") +
+  labs(x = "Slopes", y = "Density") + theme_bw()
+
+# residuals
+p_res <- ggplot(res_df, aes(x = Residual)) +
+  geom_histogram(bins = 30, aes(y = after_stat(density))) +
+  geom_density(linewidth = 0.8, color = "blue") +
+  labs(x = "Residuals", y = "Density") + theme_bw()
+
+# intercept vs slope with fixed-effect reference lines
+p_scatter <- ggplot(cf, aes(x = Intercept, y = Slope)) +
+  geom_point(alpha = 0.6) + 
+  geom_vline(xintercept = as.numeric(fixef(m3)[1]), linetype = "dotted") +
+  geom_hline(yintercept = as.numeric(fixef(m3)[2]), linetype = "dotted") +
+  labs(x = "Intercept", y = "Slope") + theme_bw()
+
+# plot
+plot_grid(p_int, p_slope, p_res, p_scatter)
+```
+
+**Explained variance**
+```{r, results="hide", message=FALSE, warning=FALSE}
+# decomposition
+r2mlm_manual(
+  data = data %>% select(all_of(all.vars(formula(m3)))) %>% drop_na(), 
+  within_covs = c("eventpl_w"),
+  between_covs = NULL,
+  random_covs = c("eventpl_w"),
+  gamma_w = unname(fixef(m3)["eventpl_w"]),
+  gamma_b = unname(fixef(m3)[c("(Intercept)")]),
+  Tau = as.matrix(getVarCov(m3)),
+  sigma2 = sigma(m3)^2
+)
+```
+
+**Nakagawa's R2**
+$$
+R^2_m = \frac{\sigma^2_{\text{fixed}}}
+              {\sigma^2_{\text{fixed}} + \sigma^2_{\text{random}} + \sigma^2_{\text{residual}}}
+\ \ \ \ 
+R^2_c = \frac{\sigma^2_{\text{fixed}} + \sigma^2_{\text{random}}}
+              {\sigma^2_{\text{fixed}} + \sigma^2_{\text{random}} + \sigma^2_{\text{residual}}}
+$$
+
+```{r}
+# extract variances
+var_fixed <- var(predict(m3, level = 0), na.rm = T)
+var_rand  <- sum(diag(as.matrix(getVarCov(m3))))
+var_res <- sigma(m3)^2
+
+# calculate R2s
+R2m <- var_fixed / (var_fixed + var_rand + var_res)
+R2c <- (var_fixed + var_rand) / (var_fixed + var_rand + var_res)
+c(R2_marginal = R2m, R2_conditional = R2c)
+
+# with helper function
+performance::r2(m3)
 ```
 
 # Adding covariates
 
 **L2 covariate**
 ```{r}
-# fit model with L2 covariate
+# fit model with L2 covariates
 m4 <- lme(pa ~ eventpl_w + eventpl_bc + age, 
           random = ~eventpl_w|id,
           data = data, 
@@ -270,42 +333,37 @@ summary(m4_c)
 # decomposition
 r2mlm_manual(
   data = data %>% select(all_of(all.vars(formula(m4)))) %>% drop_na(), 
-  within_covs  = c("eventpl_w"),
+  within_covs = c("eventpl_w"),
   between_covs = c("eventpl_bc","age"),
-  random_covs  = c("eventpl_w"),
-  gamma_w      = unname(fixef(m4)["eventpl_w"]),
-  gamma_b      = unname(fixef(m4)[c("(Intercept)","eventpl_bc","age")]),
-  Tau          = as.matrix(getVarCov(m4)),
-  sigma2       = sigma(m4)^2
+  random_covs = c("eventpl_w"),
+  gamma_w = unname(fixef(m4)["eventpl_w"]),
+  gamma_b = unname(fixef(m4)[c("(Intercept)","eventpl_bc","age")]),
+  Tau = as.matrix(getVarCov(m4)),
+  sigma2 = sigma(m4)^2
 )
 ```
 
+**Nakagawa's R2**
 ```{r}
-# Nakagawa's R2
-install.packages("performance")
-library(performance)
 performance::r2(m4)
 ```
 
 **L1 covariate**
 ```{r}
 # fit model with L1 covariate
-m5 <- lme(pa ~ eventpl + use_alcohol, 
-          random = ~eventpl + use_alcohol|id,
+m5 <- lme(pa ~ eventpl_w + use_alcohol, 
+          random = ~eventpl_w + use_alcohol|id,
           data = data, 
           na.action = na.omit)
 
 summary(m5)
 ```
 
-Card: Fixed vs random effects
-There is not yet consensus about how to deal with singularity, or more generally to choose which random-effects specification (from a range of choices of varying complexity) to use. Some proposals include:
-
- - avoid fitting overly complex models in the first place, i.e. design experiments/restrict models a priori such that the variance-covariance matrices can be estimated precisely enough to avoid singularity (Matuschek et al 2017)
-
- - use some form of model selection to choose a model that balances predictive accuracy and overfitting/type I error (Bates et al 2015, Matuschek et al 2017)
-
- - “keep it maximal”, i.e. fit the most complex model consistent with the experimental design, removing only terms required to allow a non-singular fit (Barr et al. 2013), or removing further terms based on p-values or AIC
+> `lme4` **package vignette:**  
+*There is not yet consensus about how to deal with singularity, or more generally to choose which random-effects specification (from a range of choices of varying complexity) to use. Some proposals include:*  
+ * *avoid fitting overly complex models in the first place, i.e. design experiments/restrict models a priori such that the variance-covariance matrices can be estimated precisely enough to avoid singularity (Matuschek et al 2017)*  
+ - *use some form of model selection to choose a model that balances predictive accuracy and  overfitting/type I error (Bates et al 2015, Matuschek et al 2017)*  
+ *- “keep it maximal”, i.e. fit the most complex model consistent with the experimental design, removing only terms required to allow a non-singular fit (Barr et al. 2013), or removing further terms based on p-values or AIC*  
 
 ```{r}
 # example RQ: PA <- eventpl within-participants
@@ -592,12 +650,6 @@ plot_grid(p_int_dens, p_int_qq, p_slope_dens, p_slope_qq)
 intervals(m3, level = .95)
 ```
 
-**Explained variance**
-```{r}
-
-
-```
-
 **Standardized coefficients**
 ```{r}
 library(parameters)
@@ -609,9 +661,11 @@ standardize_parameters(m3)
 Framework: https://doi.org/10.1037/a0014699, https://doi.org/10.1037/a0030048  
 Detailed tutorial: https://solomonkurz.netlify.app/blog/2021-04-22-effect-sizes-for-experimental-trials-analyzed-with-multilevel-growth-models-two-of-two/
 
-d_GMA = b_int * time / SD_pooled
-
-SD_pooled = sqrt((var_c_pre + var_p_pre)/2)
+$$
+d_{GMA} = \frac{b_{int}*time}{SD_{pooled}}
+\ \ \ \ 
+SD_{pooled} = \sqrt{\frac{SD^2_{c0}+SD^2_{t0}}{2}}
+$$
 
 ```{r}
 # fit model
@@ -636,9 +690,14 @@ as.numeric(fixef(m10)["day:statuspsychotic"]) *5 / pooled_sd
 ```
 
 # Example write-up
+```{r}
+install.packages("sjPlot")
+library(sjPlot)
+tab_model(m8)
+```
 
 
 # Exercises
-1. (a) Estimate a model that predicts negative affect based on whether participants are alone or with others. (b) Test whether the previous effect is moderated by how pleasant the company of others is experienced.
-
-2. (a) Estimate the time trend of negative affect over the study period, and (b) whether this time trend differs between mental health status groups.
+1. (a) Estimate a model that predicts negative affect (`na`) based on whether participants are alone or with others `soc_alone`. (b) Test whether the previous effect is moderated by how pleasant the company of others is experienced `soc_pleasant`. Pick an appropriate random effects structure and check model assumptions.
+  
+2. (a) Estimate the time trend of negative affect (`na`) over the study period, and (b) whether this time trend differs between mental health status groups (`status`). Report standardized effect sizes for the time:group interactions. 

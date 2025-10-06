@@ -9,7 +9,7 @@ output:
 install.packages("simr")
 ```
 
-There are several approaches to conduct power analyses for LMMs in `R`:  
+There are several approaches to conduct power analyses for LMMs in `R`, e.g.:
 - **simr**: Simulation-based function to estimate power of LMMs.  
 - **mlpwr**: ML algorithm to find the optimal sample size and number of time points.  
 - **PowerAnalysisLM**: A Shiny app for (longitudinal) LLMs that account for temporal dependencies in multi-level data.
@@ -36,12 +36,12 @@ id <- factor(1:40)
 time <- 1:6
 group <- c("control", "intervention")
 
-data <- data.frame(id = rep(id, each = length(time)),
+df <- data.frame(id = rep(id, each = length(time)),
                    time = rep(time, length(id)),
                    group = rep(rep(group, each = length(time)), 
                                length(id)/2))
 
-head(data, n = 20)
+head(df, n = 20)
 ```
 
 **Plausible parameter values**:  
@@ -69,10 +69,18 @@ rand <- list(9, -0.3, 0.0625)
 res <- 2.5
 ```
 
+**Standardized effect size**
+d<sub>GMA</sub> =
+( &beta;<sub>3</sub> &times; T ) / SD<sub>pooled,&nbsp;pre</sub>
+= ( -0.5 &times; 5 ) / &radic;(9 + 6.25)
+= ( -0.5 &times; 5 ) / 3.905
+&asymp; -0.64
+
+
+**Fit model**
 ```{r}
-# fit model
 model <- makeLmer(y ~ group * time + (time|id),
-                  fixef=fixed, VarCorr=rand, sigma=res, data=data)
+                  fixef=fixed, VarCorr=rand, sigma=res, data=df)
 summary(model)
 ```
 
@@ -136,3 +144,10 @@ sim <- powerSim(model_final, nsim = 250, test = fixed("group:time"))
 ```{r}
 sim
 ```
+
+# Exercises
+
+1. Estimate the sample size needed to test a difference in treatment vs control group .
+
+2. Estimate the power of the `eventpl` effect in model `m3`. (`simr` will throw a warning on post-hoc power analysis.)
+

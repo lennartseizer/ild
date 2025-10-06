@@ -1,10 +1,32 @@
-What is EMA / Intensive Longitudinal Data?
-Ecological Momentary Assessment (EMA), also known as intensive longitudinal data, refers to data collected repeatedly over time in ecologically valid settings (e.g. multiple times per day, across days or weeks).
-Such data allow us to study within-person dynamics, temporal processes, feedback loops, and time-varying associations.
-Key characteristics:
-High-frequency sampling (multiple observations per subject over time)
-Nested/time-series and multilevel structure
-Within-person variation and dynamics are central
-Requires modeling techniques that account for autocorrelation, intraindividual variability, and between-person heterogeneity
+# What is intensive longitudinal data?  
+Intensive longitudinal data, resulting from Ecological Momentary Assessment (EMA), refers to data collected repeatedly over time in ecologically valid settings (e.g. multiple times per day, across days or weeks). Such data allow us to study within-person dynamics, temporal processes, feedback loops, and time-varying associations.
+  
+## Key characteristics of ILD:
+- High-frequency sampling (multiple observations per subject over time)
+- Nested/time-series and multilevel structure
+- Within-person variation and dynamics are central
+- Requires modeling techniques that account for autocorrelation, intraindividual variability, and between-person heterogeneity
+  
+## Guidelines to model ILD:
+- Allow for random effects
+- Account for temporal variance as an explicit factor 
+- Specify the appropriate number of independent units
+- Distinguish the between-person and within-person levels of analysis.
+- Choose interpretable zero points for independent variables.
 
-´library(ggplot2)´
+
+## Required R packages:
+```
+# List of needed packages
+pkgs <- c(
+  "tidyverse", "lubridate", "data.table", "lme4",
+  "lmerTest", "brms", "EMAtools", "psych", "sjPlot"
+)
+
+# Install any that are missing
+install.packages(setdiff(pkgs, rownames(installed.packages())))
+
+# Load them all
+invisible(lapply(pkgs, library, character.only = TRUE))
+
+```

@@ -146,6 +146,6 @@ sim
 
 # Exercises
 
-1. Estimate the sample size needed to test a difference in treatment vs control group .
+1. Calculate the sample size needed to test a difference in treatment vs control group of approx d<sub>GMA</sub> &asymp; -0.3 with 8 weekly assessments.
 
-2. Estimate the power of the `eventpl` effect in model `m3`. (`simr` will throw a warning on post-hoc power analysis.)
+2. Calculate the sample size needed to estimate the effect of `eventpl_w` effect on `pa` in model `m3` with a power of 95%. 

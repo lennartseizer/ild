@@ -9,7 +9,7 @@ output:
 install.packages("simr")
 ```
 
-There are several approaches to conduct power analyses for LMMs in `R`, e.g.:
+There are several approaches to conduct power analyses for LMMs in `R`, e.g.:  
 - **simr**: Simulation-based function to estimate power of LMMs.  
 - **mlpwr**: ML algorithm to find the optimal sample size and number of time points.  
 - **PowerAnalysisLM**: A Shiny app for (longitudinal) LLMs that account for temporal dependencies in multi-level data.
@@ -28,12 +28,12 @@ set.seed(123)
 Intervention for patients with depression. Participants are randomized to treatment vs control groups and complete weekly PHQ-9 assessments. A linear mixed-effects model with random intercepts and slopes evaluates the week × group interaction.
 
 **Model outline**:  
-`PHQ9 ~ week * group + (week | id)`
+`PHQ9 ~ time * group + (time | id)`
 
 ```{r, message=F}
 # create design data
 id <- factor(1:40)
-time <- 1:6
+time <- 0:5
 group <- c("control", "intervention")
 
 df <- data.frame(id = rep(id, each = length(time)),
@@ -45,18 +45,18 @@ head(df, n = 20)
 ```
 
 **Plausible parameter values**:  
-Fixed effects: 
+Fixed effects:  
 `b0` (baseline mean, control): 14   
 `b1` (weekly change, control): −0.2/week   
 `b2` (baseline arm difference): 0   
 `b3` (additional weekly change with treatment): −0.5/week   
   
-Random effects (between-person variability)   
-SD(b0) (random intercept): 3 (Var = 9)  
-SD(b1) (random slope per week): 0.25 (Var = 0.0625)  
-Corr(b0, b1): −0.3 (people starting higher tend to improve faster)   
-  
-Residual SD: 2.5 (Var = 6.25)
+Random effects:  
+`SD(b0)` (random intercept): 3 (Var = 9)  
+`SD(b1)` (random slope per week): 0.25 (Var = 0.0625)  
+`Corr(b0, b1)`: −0.3 (people starting higher tend to improve faster)   
+
+`Residual SD`: 2.5 (Var = 6.25)
 
 ```{r}
 # intercept and slopes for group, time, and group:time
@@ -69,26 +69,12 @@ rand <- list(9, -0.3, 0.0625)
 res <- 2.5
 ```
 
-**Standardized effect size**
-d<sub>GMA</sub> = \\
-( &beta;<sub>3</sub> &times; T ) / SD<sub>pooled,&nbsp;pre</sub> \\
-= ( -0.5 &times; 5 ) / &radic;(9 + 6.25) \\
-= ( -0.5 &times; 5 ) / 3.905
-&asymp; -0.64
-
+**Standardized effect size**   
 d<sub>GMA</sub> =    
 ( &beta;<sub>3</sub> &times; T ) / SD<sub>pooled,&nbsp;pre</sub>  
 = ( -0.5 &times; 5 ) / &radic;(9 + 6.25)  
 = ( -0.5 &times; 5 ) / 3.905  
 &asymp; -0.64
-
-$$
-\text{Level 1: } y_{ij}
-= \color{blue}\beta_{0j}
-\color{black}+ \color{blue}\beta_{1j}\color{gray}w_{ij}
-\color{black}+ \color{red}\varepsilon_{ij}
-$$
-
 
 **Fit model**
 ```{r}
@@ -97,8 +83,8 @@ model <- makeLmer(y ~ group * time + (time|id),
 summary(model)
 ```
 
+**Power analysis**
 ```{r, results='hide', message=F}
-# power analysis
 sim <- powerSim(model, nsim = 250, test = fixed("group:time"))
 ```
 
@@ -106,8 +92,8 @@ sim <- powerSim(model, nsim = 250, test = fixed("group:time"))
 sim
 ```
 
+**Changing the number of participants**
 ```{r, results='hide', message=F}
-# changing the number of participants
 model_ext_id <- extend(model, along = "id", n = 100)
 
 p_curve <- powerCurve(model_ext_id, nsim = 250, 
@@ -120,8 +106,8 @@ p_curve <- powerCurve(model_ext_id, nsim = 250,
 plot(p_curve)
 ```
 
+**Changing the number of timepoints**
 ```{r, results='hide', message=F}
-# changing the number of timepoints
 model_ext_time <- extend(model, along = "time", n = 12)
 
 p_curve <- powerCurve(model_ext_time, nsim = 250, 
@@ -134,8 +120,8 @@ p_curve <- powerCurve(model_ext_time, nsim = 250,
 plot(p_curve)
 ```
 
+**Changing both the number of participants and timepoints**
 ```{r, results='hide', message=F}
-# changing both the number of participants and timepoints
 # create design data
 id <- factor(1:80)
 time <- 1:8
@@ -163,4 +149,3 @@ sim
 1. Estimate the sample size needed to test a difference in treatment vs control group .
 
 2. Estimate the power of the `eventpl` effect in model `m3`. (`simr` will throw a warning on post-hoc power analysis.)
-

@@ -403,27 +403,36 @@ summary(m8)
 
 # Moderation analysis
 
-**L1 moderation**
+**L2 moderation**
 ```{r}
-m9 <- lme(pa ~ eventpl * soc_alone, 
+m9 <- lme(pa ~ eventpl_w * status, 
           random = ~eventpl|id,
-          data = data, 
+          data = data,
           na.action = na.omit)
 
 summary(m9)
 ```
 
-**L2 moderation**
+**L1 moderation**
 ```{r}
-m10 <- lme(pa ~ eventpl * status, 
-          random = ~eventpl|id,
-          data = data,
+m10 <- lme(pa ~ eventpl_w * soc_alone, 
+          random = ~eventpl_w|id,
+          data = data, 
           na.action = na.omit)
 
 summary(m10)
 ```
 
-# Mediation analysis
+```{r}
+m10 <- lme(pa ~ eventpl_w * soc_alone, 
+          random = ~eventpl_w * soc_alone|id,
+          data = data, 
+          na.action = na.omit)
+
+summary(m10)
+```
+
+# Within-subject mediation analysis
 
 Terminology:  
 `1-1-1` eventpl -> use_alcohol -> PA
@@ -643,6 +652,13 @@ p_slope_qq <- ggplot(df_slope, aes(sample = effect)) + stat_qq() + stat_qq_line(
 plot_grid(p_int_dens, p_int_qq, p_slope_dens, p_slope_qq)
 ```
 
+```{r}
+install.packages("HLMdiag")
+library(HLMdiag)
+m3_ar_infl <- hlm_influence(m3_ar, level = "id")
+dotplot_diag(m3_ar_infl$cooksd, name = "cooks.distance", cutoff = 4/328)
+```
+
 # Standardized / additional outputs
 
 **Confidence intervals**
@@ -658,7 +674,6 @@ standardize_parameters(m3)
 ```
 
 **Cohen's d**
-
 Framework: https://doi.org/10.1037/a0014699, https://doi.org/10.1037/a0030048  
 Detailed tutorial: https://solomonkurz.netlify.app/blog/2021-04-22-effect-sizes-for-experimental-trials-analyzed-with-multilevel-growth-models-two-of-two/
 
@@ -694,13 +709,7 @@ as.numeric(fixef(m10)["day:statuspsychotic"]) *5 / pooled_sd
 ```{r}
 install.packages("sjPlot")
 library(sjPlot)
-tab_model(m8)
-```
-
-```{r}
-install.packages("HLMdiag")
-library(HLMdiag)
-hlm_influence(m1, level = "id")
+tab_model(m1 ,m3, m4)
 ```
 
 

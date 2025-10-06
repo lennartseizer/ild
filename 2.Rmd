@@ -112,7 +112,7 @@ summary(aggregate(data, compl ~ id, sum)$compl / 60 * 100)
 ```
 
 **Responsive delay**
-```{r, fig.dim = c(5, 4), out.width="50%", warning=F}
+```{r, fig.dim = c(7, 5), warning=F}
 # compute response delays
 data$delay <- data$resptime - data$beeptime
 
@@ -125,7 +125,7 @@ ggplot(data, aes(x = delay)) + geom_bar() +
 
 # Compute and transform variables
 
-```{r, warning=F, fig.dim = c(10, 8)}
+```{r, fig.dim = c(7, 5), warning=F}
 # check distributions and out-of-range values
 hist1 <- ggplot(data, aes(x = mood_relaxed)) + geom_bar() + 
   labs(title = "Mood: Relaxed") + theme_bw() +
@@ -184,7 +184,7 @@ head(data[, c("id", "day", "beep", "eventpl","eventpl_b",
               "eventpl_w", "eventpl_bc")])
 ```
 
-```{r, fig.dim = c(5, 4), out.width="50%", warning=F}
+```{r, fig.dim = c(7, 5), warning=F}
 # plot between part of event_pl
 id_select <- unique(data$id)[1:20]
 
@@ -197,7 +197,7 @@ data %>% filter(id %in% id_select) %>%
                         legend.position = "none")
 ```
 
-```{r, fig.dim = c(10, 8), warning=F}
+```{r, fig.dim = c(7, 5), warning=F}
 # plot within part of event_pl
 id_select <- unique(data$id)[1:20]
 
@@ -227,7 +227,7 @@ head(data[, c("id", "day", "beep", "eventpl_w", "eventpl_w_l1")],
 # Visualization
 
 **Participants' time series**
-```{r, fig.dim = c(10, 8), warning=F}
+```{r, fig.dim = c(7, 5), warning=F}
 # plot PA time series in chunks of participants
 id_select <- unique(data$id)[1:20]
 
@@ -239,7 +239,7 @@ data %>%
 ```
 
 **Participants' associations between PA and event pleasantness**
-```{r, fig.dim = c(10, 8), warning=F, message=F}
+```{r, fig.dim = c(7, 5), warning=F, message=F}
 # plot participant's within-person association between event pleasantness and PA
 data %>%
   filter(id %in% id_select) %>%
@@ -250,7 +250,7 @@ data %>%
 ```
 
 **Plot individual means of participants for all mood items**
-```{r, fig.dim = c(8, 6), warning=F}
+```{r, fig.dim = c(7, 5), warning=F}
 # select items
 item_select <- c("mood_cheerf", "mood_relaxed", "mood_irritat", 
                  "mood_anxious", "mood_down", "mood_guilty", 
@@ -276,7 +276,7 @@ ggplot(person_means, aes(x = iMean, y = item, col = item)) +
 ```
 
 **Plot mood item responses across settings (alone & location)**
-```{r, fig.dim = c(10, 8), warning=F}
+```{r, fig.dim = c(7, 5), warning=F}
 # choose items
 pos <- c("mood_cheerf","mood_relaxed","mood_satisfi")
 
@@ -302,7 +302,7 @@ data %>%
 ```
 
 **Plot mood item means over time of day**
-```{r, fig.dim = c(10, 8), warning=F}
+```{r, fig.dim = c(7, 5), warning=F}
 # select items
 items <- c("mood_cheerf","mood_relaxed","mood_satisfi",
            "mood_irritat","mood_anxious","mood_down",
@@ -330,7 +330,7 @@ ggplot(sumdat, aes(x = beep, y = mean, color = item)) +
 ```
 
 **Plot mood item means over study days**
-```{r, fig.dim = c(10, 8), warning=F}
+```{r, fig.dim = c(7, 5), warning=F}
 # select items
 items <- c("mood_cheerf","mood_relaxed","mood_satisfi",
            "mood_irritat","mood_anxious","mood_down",
@@ -358,7 +358,7 @@ ggplot(sumdat, aes(x = day, y = mean, color = item)) +
 ```
 
 **Plot individual ACF of PA and NA**
-```{r, fig.dim = c(10, 8), warning=F}
+```{r, fig.dim = c(7, 5), warning=F}
 # detrend individual PA and NA series
 long <- data %>%
   select(id, day, obs, pa, na) %>%
@@ -402,7 +402,7 @@ ggplot(acf_tbl, aes(lag, acf, col = var)) +
 ```
 
 **Plot participants based on average PA level**
-```{r, fig.dim = c(10, 4), warning=F}
+```{r, fig.dim = c(8, 3), warning=F}
 # compute within-id PA mean
 pa_level <- data %>%
   group_by(id) %>%
@@ -452,7 +452,7 @@ data %>%
 ```
 
 **Plot participants based on PA variability**
-```{r, fig.dim = c(10, 4), warning=F}
+```{r, fig.dim = c(8, 3), warning=F}
 # compute PA variability (SD)
 pa_var <- data %>%
   group_by(id) %>%
@@ -500,8 +500,8 @@ data %>%
   theme_bw() + theme(legend.position = "none")
 ```
 
-**Plot participants based on average PA level**
-```{r, fig.dim = c(10, 4), warning=F}
+**Plot participants based on association between PA and eventpl**
+```{r, fig.dim = c(8, 3), warning=F, message=F}
 # compute within-person slope of PA ~ eventpl_w
 pa_slope <- data %>%
   group_by(id) %>%
@@ -556,4 +556,3 @@ Matejka, J., & Fitzmaurice, G. (2017). Same stats, different graphs: generating 
 Siepe, B. S., Rieble, C. L., Tutunji, R., Rimpler, A., März, J., Proppert, R. K., & Fried, E. I. (2025). Understanding Ecological-Momentary-Assessment Data: A Tutorial on Exploring Item Performance in Ecological-Momentary-Assessment Data. Advances in Methods and Practices in Psychological Science, 8(1), 25152459241286877.
 
 Revol, J., Carlier, C., Lafit, G., Verhees, M., Sels, L., & Ceulemans, E. (2024). Preprocessing experience-sampling-method data: A step-by-step framework, tutorial website, R package, and reporting templates. Advances in Methods and Practices in Psychological Science, 7(4), 25152459241256609.
-

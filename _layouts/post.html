@@ -3,7 +3,10 @@ layout: default
 ---
 
 <div class="post">
-  <h1 class="post-title">{{ page.title }}</h1>
+  {% assign content_has_h1 = content contains '<h1' %}
+  {% unless content_has_h1 %}
+    <h1 class="post-title">{{ page.title }}</h1>
+  {% endunless %}
   <span class="post-date">{{ page.date | date_to_string }}</span>
   {{ content }}
 </div>

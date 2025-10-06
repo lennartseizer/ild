@@ -821,7 +821,7 @@ cowplot::plot_grid(p_int_dens, p_int_qq, p_slope_dens, p_slope_qq)
 ```
 
 **Outliers / Influential observations**
-```{r, message=F, warning=F}
+```{r, warning=F,message=F}
 m3_infl <- hlm_influence(m3, level = "id")
 dotplot_diag(m3_infl$cooksd, name = "cooks.distance", cutoff = 4/328)
 ```
@@ -839,9 +839,10 @@ intervals(m3, level = .95)
 standardize_parameters(m3)
 ```
 
-**Cohen's d**  
+**Cohen's d**
 Framework:  
 https://doi.org/10.1037/a0014699, https://doi.org/10.1037/a0030048  
+  
 Detailed tutorial:   
 https://solomonkurz.netlify.app/blog/2021-04-22-effect-sizes-for-experimental-trials-analyzed-with-multilevel-growth-models-two-of-two/
 
@@ -870,17 +871,6 @@ pooled_sd <- sqrt((sd_d1_p^2 + sd_d1_c^2) / 2)
 # d_gma
 as.numeric(fixef(m10)["day:statuspsychotic"]) * 5 / pooled_sd
 ```
-
-# Publication ready tables 
-```{r}
-tab_model(m1)
-tab_model(m1 ,m3, m4)
-```
-
-```{r, include=F}
-1+2
-```
-
 
 # Exercises
 >

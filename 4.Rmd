@@ -821,7 +821,7 @@ cowplot::plot_grid(p_int_dens, p_int_qq, p_slope_dens, p_slope_qq)
 ```
 
 **Outliers / Influential observations**
-```{r}
+```{r, message=F, warning=F}
 m3_infl <- hlm_influence(m3, level = "id")
 dotplot_diag(m3_infl$cooksd, name = "cooks.distance", cutoff = 4/328)
 ```
@@ -836,7 +836,6 @@ intervals(m3, level = .95)
 
 **Standardized coefficients**
 ```{r}
-
 standardize_parameters(m3)
 ```
 

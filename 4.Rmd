@@ -47,7 +47,9 @@ data <- data %>%
 ```
    
 **R packages**   
-   
+
+
+
 | Feature / Task                   | **lme4 (lmer)**                          | **nlme (lme)**                                 |
 |----------------------------------|------------------------------------------|------------------------------------------------|
 | Main function                    | `lmer()`                                 | `lme()`                                        |
@@ -229,7 +231,7 @@ head(ranef(m3))
 ```
 
 **Plot estimates**
-```{r}
+```{r, warning=F, message=F}
 # extract random estimates
 cf <- as.data.frame(coef(m3))
 names(cf)[1:2] <- c("Intercept", "Slope") 
@@ -296,10 +298,10 @@ r2mlm_manual(
 )
 ```
 
-**Nakagawa's R2**
+**Nakagawa's R2**  
 R<sup>2</sup><sub>m</sub> = ( &sigma;<sup>2</sup><sub>fixed</sub> ) /
 ( &sigma;<sup>2</sup><sub>fixed</sub> + &sigma;<sup>2</sup><sub>random</sub> + &sigma;<sup>2</sup><sub>residual</sub> )
-&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;  
 R<sup>2</sup><sub>c</sub> = ( &sigma;<sup>2</sup><sub>fixed</sub> + &sigma;<sup>2</sup><sub>random</sub> ) /
 ( &sigma;<sup>2</sup><sub>fixed</sub> + &sigma;<sup>2</sup><sub>random</sub> + &sigma;<sup>2</sup><sub>residual</sub> )
 

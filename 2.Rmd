@@ -209,8 +209,8 @@ data %>% filter(id %in% id_select) %>%
                         legend.position = "none")
 ```
 
+**Create lagged variables**
 ```{r}
-# create lagged variables
 data <- data %>%
   arrange(id, obs) %>%                
   group_by(id) %>%     
@@ -220,8 +220,9 @@ data <- data %>%
   mutate(eventpl_w_l1 = if_else(beep == 1, NA, eventpl_w_l1)) %>%
   ungroup()
 
-head(data[, c("id", "day", "beep", "eventpl_w", "eventpl_w_l1")], 
-     n = 25)
+print.data.frame(head(data[, c("id", "day", "beep", 
+    "eventpl_w", "eventpl_w_l1")], 
+     n = 25))
 ```
 
 # Visualization
@@ -325,8 +326,7 @@ ggplot(sumdat, aes(x = beep, y = mean, color = item)) +
     scale_x_continuous(breaks = sort(unique(sumdat$beep))) +
     labs(title = "Item means across beeps (time of day)",
          x = "Beep", y = "Mean response", color = "Item") +
-    theme_bw() + theme(plot.title = element_text(face = "bold"),
-        legend.position = "none")
+    theme_bw() + theme(plot.title = element_text(face = "bold"))
 ```
 
 **Plot mood item means over study days**
@@ -353,8 +353,7 @@ ggplot(sumdat, aes(x = day, y = mean, color = item)) +
   scale_x_continuous(breaks = sort(unique(sumdat$day))) +
   labs(title = "Item means across study days",
        x = "Day", y = "Mean response", color = "Item") +
-  theme_bw() + theme(plot.title = element_text(face = "bold"),
-        legend.position = "none")
+  theme_bw() + theme(plot.title = element_text(face = "bold"))
 ```
 
 **Plot individual ACF of PA and NA**
@@ -446,7 +445,7 @@ data %>%
   geom_line() +
   geom_point() +
   facet_wrap(~ panel, nrow = 1) +
-  labs(title = "PA time series at 1th, 25th, 50th, 75th, and 100th percentiles of within-id Mean",
+  labs(title = "PA time series at 0th, 25th, 50th, 75th, and 100th percentiles of within-id Mean",
        x = "Observation", y = "PA") +
   theme_bw() + theme(legend.position = "none")
 ```

@@ -5,7 +5,7 @@ title: "Preprocessing"
 ```{r, include=FALSE}  
 install.packages("dplyr")
 install.packages("ggplot2")
-install.packages("cowplot")
+install.packages("cowplot")  
 install.packages("tidyr")
 install.packages("ggdist")
 install.packages("forcats")

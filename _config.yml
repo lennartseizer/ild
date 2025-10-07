@@ -3,7 +3,7 @@ title:               LMM
 tagline:             'Theory & Analysis'
 description:         'This page contains material, code, and background on intensive longitudinal data analysis. Made by <a href="https://github.com/lennartseizer" target="_blank">@lennartseizer</a>.'
 url:                 'https://lennartseizer.github.io'
-baseurl:             '/ild'
+baseurl:             '/lmm'
 paginate:            5
 permalink:           pretty
 
@@ -16,4 +16,4 @@ plugins:
   - jekyll-paginate
 
 # Custom vars
-version:             05/2025
+version:             10/2025

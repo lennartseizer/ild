@@ -883,7 +883,5 @@ as.numeric(fixef(m13)["day:statuspsychotic"]) * 5 / pooled_sd
 
 # Exercises
 >
-1.(a) Estimate a model that predicts negative affect (`na`) based on whether participants are alone or with others (`soc_alone`). (b) Test whether the previous effect is moderated by how pleasant the company of others is experienced `soc_pleasant`. Pick an appropriate random effects structure and check model assumptions.
-
->
-2.(a) Estimate the time trend of negative affect (`na`) over the study period, and (b) whether this time trend differs between mental health status groups (`status`). Report standardized effect sizes for the time:group interactions. 
+1. Estimate a model that predicts negative affect (`na`) based on whether participants are alone or with others (`soc_alone`) with `use_coffee` and `use_alcohol` as covariates. Pick an appropriate random effects structure based on BIC/LRT and check model assumptions. 
+2. Estimate the time trend of negative affect (`na`) over the six study days, and whether this time trend differs between mental health status groups (`status`). Report standardized effect sizes.

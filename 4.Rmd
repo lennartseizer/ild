@@ -392,7 +392,9 @@ summary(m5)
  - *use some form of model selection to choose a model that balances predictive accuracy and  overfitting/type I error (Bates et al 2015, Matuschek et al 2017)*    
  - *“keep it maximal”, i.e. fit the most complex model consistent with the experimental design, removing only terms required to allow a non-singular fit (Barr et al. 2013), or removing further terms based on p-values or AIC*  
 
-**Example RQ: within-participant** `eventpl` **->** `pa` **with covariates** `use_alcohol` **and** `use_alcohol`
+**Example RQ:**   
+within-participant `eventpl` -> `pa` 
+with covariates `use_alcohol` and `use_alcohol`
 ```{r}
 # base model
 m6 <- lme(pa ~ eventpl_bc + use_alcohol + use_coffee, 

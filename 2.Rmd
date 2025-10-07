@@ -445,7 +445,7 @@ data %>%
   geom_line() +
   geom_point() +
   facet_wrap(~ panel, nrow = 1) +
-  labs(title = "PA time series at 1th, 25th, 50th, 75th, and 100th percentiles of within-id Mean",
+  labs(title = "PA time series at 0th, 25th, 50th, 75th, and 100th percentiles of within-id Mean",
        x = "Observation", y = "PA") +
   theme_bw() + theme(legend.position = "none")
 ```

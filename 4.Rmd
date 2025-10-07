@@ -394,7 +394,7 @@ summary(m5)
 
 **Example RQ:**   
 within-participant `eventpl` -> `pa` 
-with covariates `use_alcohol` and `use_alcohol`
+with covariates `use_alcohol` and `use_coffee`
 ```{r}
 # base model
 m6 <- lme(pa ~ eventpl_bc + use_alcohol + use_coffee, 

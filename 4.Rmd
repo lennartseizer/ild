@@ -393,8 +393,8 @@ summary(m5)
  - *“keep it maximal”, i.e. fit the most complex model consistent with the experimental design, removing only terms required to allow a non-singular fit (Barr et al. 2013), or removing further terms based on p-values or AIC*  
 
 **Example RQ:**   
-within-participant `eventpl` -> `pa` 
-with covariates `use_alcohol` and `use_coffee`
+within-participant `eventpl_w` -> `pa` 
+with covariates `eventpl_bc`, `use_alcohol` and `use_coffee`
 ```{r}
 # base model
 m6 <- lme(pa ~ eventpl_bc + use_alcohol + use_coffee, 
@@ -606,9 +606,9 @@ summary(m_med)
 
 `dm` - intercept when `m` is the outcome  
 `dy` - intercept when `y` is the outcome  
-`dm:use_alcohol` - effect of `x` when `m` is the outcome (i.e., `a` path)  
-`dy:eventpl_w` - effect of `m` when `y` is the outcome (i.e., `b` path)  
-`dy:use_alcohol` - effect of `x` when `y` is the outcome (i.e., `c` path)
+`dm:use_alcohol` - effect of `x` when `m` is the outcome (`a` path)  
+`dy:eventpl_w` - effect of `m` when `y` is the outcome (`b` path)  
+`dy:use_alcohol` - effect of `x` when `y` is the outcome (`c` path)
 
 # Lagged analysis
 
@@ -700,7 +700,7 @@ m3 <- lme(pa ~ eventpl_w,
 ```
 
 **L1 residuals**
-```{r, message=F}
+```{r, message=F, warning=F}
 # prepare residuals/predictions
 res  <- residuals(m3, type = "normalized")
 pred <- fitted(m3)
@@ -755,7 +755,7 @@ m3_ar <- lme(pa ~ eventpl_w,
 ```
 
 **L1 residuals**
-```{r, message = F}
+```{r, message = F, warning=F}
 # prepare residuals/predictions
 res  <- residuals(m3_ar, type = "normalized")
 pred <- fitted(m3_ar)

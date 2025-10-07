@@ -47,6 +47,7 @@ data <- data %>%
 ```
    
 **R packages**   
+   
 | Feature / Task                   | **lme4 (lmer)**                          | **nlme (lme)**                                 |
 |----------------------------------|------------------------------------------|------------------------------------------------|
 | Main function                    | `lmer()`                                 | `lme()`                                        |
@@ -845,7 +846,7 @@ Framework:
 https://doi.org/10.1037/a0014699, https://doi.org/10.1037/a0030048  
   
 Detailed tutorial:   
-https://solomonkurz.netlify.app/blog/2021-04-22-effect-sizes-for-experimental-trials-analyzed-with-multilevel-growth-models-two-of-two/
+https://solomonkurz.netlify.app/blog/2021-04-22-effect-sizes-for-experimental-trials-analyzed-with-multilevel-growth-models-one-of-two/
 
 d<sub>GMA</sub> = ( b<sub>int</sub> &times; time ) / SD<sub>pooled</sub>
 &nbsp;&nbsp;&nbsp;&nbsp;
@@ -875,11 +876,7 @@ as.numeric(fixef(m13)["day:statuspsychotic"]) * 5 / pooled_sd
 
 # Exercises
 >
-1.a) Estimate a model that predicts negative affect (`na`) based on whether participants are alone or with others (`soc_alone`). b) Test whether the previous effect is moderated by how pleasant the company of others is experienced `soc_pleasant`. Pick an appropriate random effects structure and check model assumptions.
+1.(a) Estimate a model that predicts negative affect (`na`) based on whether participants are alone or with others (`soc_alone`). (b) Test whether the previous effect is moderated by how pleasant the company of others is experienced `soc_pleasant`. Pick an appropriate random effects structure and check model assumptions.
 
 >
-2. (A) Estimate the time trend of negative affect (`na`) over the study period, and b) whether this time trend differs between mental health status groups (`status`). Report standardized effect sizes for the time:group interactions. 
-
->
-2. A) Estimate the time trend of negative affect (`na`) over the study period, and b) whether this time trend differs between mental health status groups (`status`). Report standardized effect sizes for the time:group interactions.
-
+2.(a) Estimate the time trend of negative affect (`na`) over the study period, and (b) whether this time trend differs between mental health status groups (`status`). Report standardized effect sizes for the time:group interactions. 

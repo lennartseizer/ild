@@ -47,8 +47,8 @@ head(df, n = 20)
 **Plausible parameter values**:  
 Fixed effects:  
 `b0` (baseline mean, control): 14   
-`b1` (baseline arm difference): 0
-`b2` (weekly change, control): −0.2/week 
+`b1` (baseline arm difference): 0  
+`b2` (weekly change, control): −0.2/week   
 `b3` (additional weekly change with treatment): −0.5/week   
   
 Random effects:  

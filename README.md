@@ -11,8 +11,8 @@ Intensive longitudinal data, resulting from Ecological Momentary Assessment (EMA
 - Allow for random effects
 - Account for temporal variance as an explicit factor 
 - Specify the appropriate number of independent units
-- Distinguish the between-person and within-person levels of analysis.
-- Choose interpretable zero points for independent variables.
+- Distinguish the between-person and within-person levels of analysis
+- Choose interpretable zero points for independent variables
 
 
 ## Required R packages:

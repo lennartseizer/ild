@@ -567,19 +567,22 @@ data_med$m <- data_med$eventpl_w
 
 # melt y and m into z
 data_med <- melt(data_med,
-                 id.vars   = c("id", "obs", "use_alcohol", "eventpl_w"),
+                 id.vars   = c("id", "obs", "use_alcohol", 
+                               "eventpl_w"),
                  measure.vars = c("m","pa"),              
                  variable.name = "dv",
                  value.name    = "z")
 
 # adding dummy variables
-data_med$dv <- factor(data_med$dv, levels = c("m","pa"))  # mediator first
+data_med$dv <- factor(data_med$dv, levels = c("m","pa"))  
 data_med$dm <- as.integer(data_med$dv == "m")
 data_med$dy <- as.integer(data_med$dv == "pa")
 data_med$obs <- scale(data_med$obs, center = TRUE, scale = FALSE)
 
 # order by id and time
 data_med <- data_med[order(data_med$id,data_med$obs),]
+
+head(data_med)
 ```
 
 **Fit mediation model**
@@ -850,7 +853,7 @@ Framework:
 https://doi.org/10.1037/a0014699, https://doi.org/10.1037/a0030048  
   
 Detailed tutorial:   
-https://solomonkurz.netlify.app/blog/2021-04-22-effect-sizes-for-experimental-trials-analyzed-with-multilevel-growth-models-one-of-two/
+https://solomonkurz.netlify.app/blog/2021-01-26-effect-sizes-for-experimental-trials-analyzed-with-multilevel-growth-models-one-of-two/
 
 d<sub>GMA</sub> = ( b<sub>int</sub> &times; time ) / SD<sub>pooled</sub>
 &nbsp;&nbsp;&nbsp;&nbsp;

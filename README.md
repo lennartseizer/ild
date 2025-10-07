@@ -18,10 +18,9 @@ Intensive longitudinal data, resulting from Ecological Momentary Assessment (EMA
 ## Required R packages:
 ```
 # List of needed packages
-pkgs <- c("simr", "nlme", "lme4", "lme4", "ggplot2",
-"cowplot", "scales", "r2mlm", "tidyr", "parameters",
-"reshape2", "HLMdiag", "sjPlot", "dplyr", "forcats",
-"ggdist", "scales")
+pkgs <- c("simr", "nlme", "lme4", "ggplot2", "cowplot",
+"scales", "r2mlm", "tidyr", "parameters", "reshape2",
+"HLMdiag", "sjPlot", "dplyr", "forcats", "ggdist", "scales")
 
 # Install any that are missing
 install.packages(setdiff(pkgs, rownames(installed.packages())))

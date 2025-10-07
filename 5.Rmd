@@ -145,7 +145,8 @@ sim
 ```
 
 # Exercises
+>
+1. Create a power curve to find the sample size needed to test an interaction effect of -0.2 with 8 weekly assessments at a power of 95% in the above setup.
 
-1. Calculate the sample size needed to test a difference in treatment vs control group of approx d<sub>GMA</sub> &asymp; -0.3 with 8 weekly assessments.
-
-2. Calculate the sample size needed to estimate the effect of `eventpl_w` effect on `pa` in model `m3` with a power of 95%. 
+>
+2. In the setup of Ex. 1, additionally calculate the sample size needed to estimate a moderation effect of participants’ sex (approx. equally distributed) on the treatment effect with -0.2 at a power of 80%.

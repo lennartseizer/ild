@@ -9,7 +9,7 @@ Intensive longitudinal data, resulting from Ecological Momentary Assessment (EMA
 
   <figure>
     <img src="https://media.springernature.com/lw685/springer-static/image/chp%3A10.1007%2F978-3-319-57413-4_18/MediaObjects/323114_1_En_18_Fig2_HTML.png">
-</figure>
+
   
 ## Guidelines to model ILD:
 - Allow for random effects
